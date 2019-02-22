@@ -14,6 +14,8 @@ const int speedRight = D5;
 const int speedLeft = D6;
 
 bool reverseMove = false;
+int spdLeft = 255;
+int spdRight = 255;
 
 void stopMove()
 {
@@ -171,6 +173,94 @@ void moveBackLeft()
   }
 }
 
+void moveSlowRight()
+{
+  if (spdRight < 25)
+  {
+    spdRight = 0;
+  }
+  else
+  {
+    spdRight = spdRight - 25;
+  }
+
+  if (reverseMove)
+  {
+    analogWrite(speedLeft, spdLeft);
+  }
+  else
+  {
+    analogWrite(speedRight, spdRight);
+  }
+  
+}
+
+void moveSlowLeft()
+{
+  if (spdLeft < 25)
+  {
+    spdLeft = 0;
+  }
+  else
+  {
+    spdLeft = spdLeft - 25;
+  }
+
+  if (reverseMove)
+  {
+    analogWrite(speedRight, spdRight);
+  }
+  else
+  {
+    analogWrite(speedLeft, spdLeft);
+  }
+  
+}
+
+void moveFastRight()
+{
+  if (spdRight > 230)
+  {
+    spdRight = 255;
+  }
+  else
+  {
+    spdRight = spdRight + 25;
+  }
+
+  if (reverseMove)
+  {
+    analogWrite(speedLeft, spdLeft);
+  }
+  else
+  {
+    analogWrite(speedRight, spdRight);
+  }
+  
+}
+
+void moveFastLeft()
+{
+  if (spdLeft > 230)
+  {
+    spdLeft = 255;
+  }
+  else
+  {
+    spdLeft = spdLeft + 25;
+  }
+  if (reverseMove)
+  {
+    analogWrite(speedRight, spdRight);
+  }
+  else
+  {
+    analogWrite(speedLeft, spdLeft);
+  }
+  
+}
+
+
 void loop() 
 { 
 
@@ -268,7 +358,40 @@ void loop()
       reverseMove = true;
     }
     
-    }
+  }
+  else if (req.indexOf("/gpio/moveSlowLeft") != -1)
+  {
+  
+    Serial.print("move slow left ");
+    Serial.println(spdLeft);
+    
+    moveSlowLeft();
+    
+  }
+  else if (req.indexOf("/gpio/moveSlowRight") != -1)
+  {
+  
+    Serial.println("move right slow");
+    
+    moveSlowRight();
+    
+  }
+  else if (req.indexOf("/gpio/moveFastRight") != -1)
+  {
+  
+    Serial.println("reverse");
+    
+    moveFastRight();
+    
+  }
+  else if (req.indexOf("/gpio/moveFastLeft") != -1)
+  {
+  
+    Serial.println("reverse");
+    
+    moveFastLeft();
+    
+  }
   else
   {
   
