@@ -2,20 +2,24 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <time.h>
 
 const char* ssid = "MiInternet";
 const char* password = "NubasIvan";
 
-const int backLeft = D1; 
-const int upLeft = D2;
-const int backRight = D3; 
-const int upRight = D4;
-const int speedRight = D5;
-const int speedLeft = D6;
+const int backLeft = D5; 
+const int upLeft = D6;
+const int backRight = D7; 
+const int upRight = D8;
+const int speedRight = D1;
+const int speedLeft = D2;
 
 bool reverseMove = false;
-int spdLeft = 255;
-int spdRight = 255;
+int spd = 255;
+
+String IPstr = "";
+const int numLog = 10;
+String statusStr[numLog];
 
 void stopMove()
 {
@@ -24,6 +28,36 @@ void stopMove()
   digitalWrite(backLeft, false);
   digitalWrite(backRight, false);
   delay(100);
+}
+
+String timePrint()
+{
+  String timeStr = "";
+  int timeNow = millis() / 1000;
+  
+  if (timeNow / 60 / 60 < 10) 
+  { 
+    timeStr +="0"; 
+  }
+  
+  timeStr += String(timeNow / 60 / 60);
+  
+  timeStr += ":";
+  if ( (timeNow / 60) % 60 < 10) 
+  { 
+    timeStr += "0"; 
+  }
+  
+  timeStr += String( (timeNow/60)%60);
+  timeStr += ":";
+  if (timeNow % 60 < 10) 
+  { 
+    timeStr += "0"; 
+  }
+  
+  timeStr += String(timeNow % 60);
+
+  return timeStr;
 }
 
 WiFiServer server(80);
@@ -69,12 +103,35 @@ void setup()
   Serial.println("Server started");\
   
   Serial.println(WiFi.localIP());
-
+  for (int i = 0; i < numLog; i++)
+  {
+    if (i == 0)
+    {
+      statusStr[i] = timePrint() + "  Start";
+    }
+    else
+    {
+      statusStr[i] = "";
+    }
+  }
 } 
+
+void statusChange(String newStatus)
+{
+  
+  for(int i = numLog - 1; i > 0; i--)
+  {
+    statusStr[i] = statusStr[i-1];
+  }
+  
+  statusStr[0] = timePrint() + "  " + newStatus;
+
+}
 
 void moveUp()
 {
   stopMove();
+  statusChange("move up");
   
   if (reverseMove)
   {
@@ -91,6 +148,7 @@ void moveUp()
 void moveBack()
 {
   stopMove();
+  statusChange("move back");
   if (reverseMove)
   {
     digitalWrite(upRight, true);
@@ -105,14 +163,20 @@ void moveBack()
 
 void right()
 {
+  
   stopMove();
+  statusChange("right");
+  
   digitalWrite(backRight, true);
   digitalWrite(upLeft, true);
 }
 
 void left()
 {
+  
   stopMove();
+  statusChange("left");
+  
   digitalWrite(upRight, true);
   digitalWrite(backLeft, true);
 }
@@ -121,6 +185,8 @@ void moveUpRight()
 {
 
   stopMove();
+  statusChange("move up and right");
+  
   if (reverseMove)
   {
     digitalWrite(backRight, true); 
@@ -135,6 +201,8 @@ void moveUpLeft()
 {
 
   stopMove();
+  statusChange("move up and left");
+  
   if (reverseMove)
   {
     digitalWrite(backLeft, true); 
@@ -149,6 +217,8 @@ void moveBackRight()
 {
   
   stopMove();
+  statusChange("move back and right");
+  
   if (reverseMove)
   {
     digitalWrite(upRight, true); 
@@ -163,6 +233,8 @@ void moveBackLeft()
 {
 
   stopMove();
+  statusChange("move back and left");
+  
   if (reverseMove)
   {
     digitalWrite(upLeft, true); 
@@ -173,98 +245,50 @@ void moveBackLeft()
   }
 }
 
-void moveSlowRight()
+void moveSlow()
 {
-  if (spdRight < 25)
+  if (spd < 25)
   {
-    spdRight = 0;
+    spd = 0;
   }
   else
   {
-    spdRight = spdRight - 25;
+    spd = spd - 25;
   }
 
   if (reverseMove)
   {
-    analogWrite(speedLeft, spdLeft);
+    analogWrite(speedRight, spd);
   }
   else
   {
-    analogWrite(speedRight, spdRight);
+    analogWrite(speedLeft, spd);
   }
   
 }
 
-void moveSlowLeft()
+void moveFast()
 {
-  if (spdLeft < 25)
+  
+  if (spd > 230)
   {
-    spdLeft = 0;
+    spd = 255;
   }
   else
   {
-    spdLeft = spdLeft - 25;
-  }
-
-  if (reverseMove)
-  {
-    analogWrite(speedRight, spdRight);
-  }
-  else
-  {
-    analogWrite(speedLeft, spdLeft);
+    spd = spd + 25;
   }
   
-}
-
-void moveFastRight()
-{
-  if (spdRight > 230)
-  {
-    spdRight = 255;
-  }
-  else
-  {
-    spdRight = spdRight + 25;
-  }
-
-  if (reverseMove)
-  {
-    analogWrite(speedLeft, spdLeft);
-  }
-  else
-  {
-    analogWrite(speedRight, spdRight);
-  }
+    analogWrite(speedLeft, spd);
+    analogWrite(speedRight, spd);
   
 }
-
-void moveFastLeft()
-{
-  if (spdLeft > 230)
-  {
-    spdLeft = 255;
-  }
-  else
-  {
-    spdLeft = spdLeft + 25;
-  }
-  if (reverseMove)
-  {
-    analogWrite(speedRight, spdRight);
-  }
-  else
-  {
-    analogWrite(speedLeft, spdLeft);
-  }
-  
-}
-
 
 void loop() 
 { 
 
   WiFiClient client = server.available();
+  
   if (!client) 
   {
     return;
@@ -359,37 +383,22 @@ void loop()
     }
     
   }
-  else if (req.indexOf("/gpio/moveSlowLeft") != -1)
+  else if (req.indexOf("/gpio/moveSlow") != -1)
   {
   
-    Serial.print("move slow left ");
-    Serial.println(spdLeft);
+    Serial.print("move slow");
+    Serial.println(spd);
     
-    moveSlowLeft();
+    moveSlow();
     
   }
-  else if (req.indexOf("/gpio/moveSlowRight") != -1)
+  else if (req.indexOf("/gpio/moveFast") != -1)
   {
   
-    Serial.println("move right slow");
+    Serial.println("move fast");
+    Serial.println(spd);
     
-    moveSlowRight();
-    
-  }
-  else if (req.indexOf("/gpio/moveFastRight") != -1)
-  {
-  
-    Serial.println("reverse");
-    
-    moveFastRight();
-    
-  }
-  else if (req.indexOf("/gpio/moveFastLeft") != -1)
-  {
-  
-    Serial.println("reverse");
-    
-    moveFastLeft();
+    moveFast();
     
   }
   else
@@ -408,7 +417,12 @@ void loop()
   s += "<center><a href='http://"+IP+"/gpio/moveUpLeft'>UP AND LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/up'>UP</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/moveUpRight'>UP AND RIGHT</a><br>";
   s += "<br><a href='http:/"+IP+"/gpio/left'>LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/stop'>STOP</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/right'>RIGHT</a><br>";
   s += "<br><a href='http://"+IP+"/gpio/moveBackLeft'>DOWN AND LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/down'>DOWN</a> &emsp;&emsp;<a href='http://"+IP+"/gpio/moveBackRight'>DOWN AND RIGHT</a><br>";
-  s += "<br><a href='http://"+IP+"/gpio/reverse'>REVERSE</a>";
+  s += "<br><a href='http://"+IP+"/gpio/moveSlow'>SLOW MOVE</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/reverse'>REVERSE</a> &emsp;&emsp; <a href='http:/"+IP+"/gpio/moveSlowLeft'>FAST</a> <br>";
+  s += "<br>STATUS: <br><br>";
+  for (int i = 0; i < numLog; i++)
+  {
+    s += statusStr[i] + "<br>";
+  }
   s += "</center><br></html>\n";
   
   client.print(s);
