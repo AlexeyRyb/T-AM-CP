@@ -40,7 +40,8 @@ TaMcP::TaMcP(int pins[6])
     _speedRight(pins[4]),
     _speedLeft(pins[5]),
     _spd(255),
-    _reverseMove(false)
+    _reverseMove(false),
+    _stopMoveMode(true)
 
 {
     for (int i = 0; i < _numLog; i++)
@@ -91,15 +92,27 @@ void TaMcP::statusChange(String newStatus)
 
 }
 
-void TaMcP::setReverse()
+void TaMcP::setReverse(bool statusReverse)
 {
-    if (_reverseMove)
+        _reverseMove = statusReverse;
+}
+
+void TaMcP::setSpd(int speedIn)
+{
+
+    _spd = speedIn;
+
+}
+
+void TaMcP::setStopMoveMode()
+{
+    if (_stopMoveMode)
     {
-        _reverseMove = false;
+        _stopMoveMode = false;
     }
     else
     {
-        _reverseMove = true;
+        _stopMoveMode = true;
     }
 }
 void TaMcP::stopMove()
@@ -118,8 +131,11 @@ void TaMcP::stopMove()
 
 void TaMcP::moveUp()
 {
+    if (_stopMoveMode)
+    {
+        stopMove();
+    }
 
-    stopMove();
     #ifdef TaMcP_debug
         Serial.println(timePrint() + " move up");
     #endif
@@ -140,7 +156,10 @@ void TaMcP::moveUp()
 void TaMcP::moveBack()
 {
 
-    stopMove();
+    if (_stopMoveMode)
+    {
+        stopMove();
+    }
     #ifdef TaMcP_debug
         Serial.println(timePrint() + " move back");
     #endif
@@ -160,7 +179,10 @@ void TaMcP::moveBack()
 void TaMcP::right()
 {
 
-    stopMove();
+    if (_stopMoveMode)
+    {
+        stopMove();
+    }
     #ifdef TaMcP_debug
         Serial.println(timePrint() + " move right");
     #endif
@@ -173,7 +195,10 @@ void TaMcP::right()
 void TaMcP::left()
 {
 
-    stopMove();
+    if (_stopMoveMode)
+    {
+        stopMove();
+    }
     #ifdef TaMcP_debug
         Serial.println(timePrint() + " move left");
     #endif
@@ -187,7 +212,10 @@ void TaMcP::left()
 void TaMcP::moveUpRight()
 {
 
-    stopMove();
+    if (_stopMoveMode)
+    {
+        stopMove();
+    }
     #ifdef TaMcP_debug
         Serial.println(timePrint() + " move up and right");
     #endif
@@ -206,7 +234,10 @@ void TaMcP::moveUpRight()
 void TaMcP::moveUpLeft()
 {
 
-    stopMove();
+    if (_stopMoveMode)
+    {
+        stopMove();
+    }
     #ifdef TaMcP_debug
         Serial.println(timePrint() + " move up and left");
     #endif
@@ -225,7 +256,10 @@ void TaMcP::moveUpLeft()
 void TaMcP::moveBackRight()
 {
 
-    stopMove();
+    if (_stopMoveMode)
+    {
+        stopMove();
+    }
     #ifdef TaMcP_debug
         Serial.println(timePrint() + " move back and right");
     #endif
@@ -244,7 +278,10 @@ void TaMcP::moveBackRight()
 void TaMcP::moveBackLeft()
 {
 
-    stopMove();
+    if (_stopMoveMode)
+    {
+        stopMove();
+    }
     #ifdef TaMcP_debug
         Serial.println(timePrint() + " move back and left");
     #endif

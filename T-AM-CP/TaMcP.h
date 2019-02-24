@@ -27,6 +27,7 @@ private:
     int _speedRight;
     int _speedLeft;
     bool _reverseMove;
+    bool _stopMoveMode;
 
 public:
 
@@ -35,7 +36,7 @@ public:
     void statusChange(String newStatus);
     String getStatus();
 
-    void setReverse();
+    void setReverse(bool statusMode);
 
     void moveUp();
     void moveBack();
@@ -49,6 +50,9 @@ public:
 
     void moveSlow();
     void moveFast();
+    void setSpd(int speedIn);
+
+    void setStopMoveMode();
 
 
 

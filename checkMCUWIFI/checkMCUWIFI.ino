@@ -1,17 +1,13 @@
-#include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>
 #include <time.h>
 #include <TaMcP.h>
 
 
-const char* ssid = "MiInet";
-const char* password = "NubasIvan";
-
-String IP = "";
 int pins[6] = {D5, D6, D7, D8, D1, D2};
-WiFiServer server(80);
+const int moveUp =  9;
+const int moveDown = 10;
+const int right =   13;
+const int left = 14;
+const int reverse = 11;
 
 TaMcP tank = TaMcP(pins);
 
@@ -21,152 +17,74 @@ void setup()
   Serial.begin(115200); 
   Serial.setTimeout(100); 
   
+  pinMode(moveUp, INPUT);
+  pinMode(moveDown, INPUT);
+  pinMode(right, INPUT);
+  pinMode(left, INPUT);
+  pinMode(reverse, INPUT);
   
-  Serial.println("Ready!"); 
-  
-  Serial.println();
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  
-  WiFi.begin(ssid, password);
-  
-  while (WiFi.status() != WL_CONNECTED) 
-  {
-    
-    delay(500);
-    Serial.print(".");
-
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  
-  server.begin();
-  Serial.println("Server started");\
-  
-  IP = WiFi.localIP().toString();
+  Serial.println("Ready");
+  tank.setStopMoveMode();
 } 
 
 void loop() 
 { 
+   int valUp = analogRead(moveUp);
+   int valBack = analogRead(moveDown);
+   int valRight = analogRead(right);
+   int valLeft = analogRead(left);
+   int valReverse = digitalRead(reverse);
 
-  WiFiClient client = server.available();
-  
-  if (!client) 
-  {
-    return;
-  }
-  
-  Serial.println("new client");
-  while(!client.available())
-  {
-     delay(1);
-  }
-  
-  String req = client.readStringUntil('\r');
-  
-  Serial.println(req);
-  client.flush();
-  
-  if (req.indexOf("/gpio/up") != -1)
-  {
-  
+   tank.setReverse(valReverse);
+
+   if ( (valUp > 0) && (valBack == 0) && (valRight == 0) && (valLeft == 0))
+   {
+    
+    tank.setSpd(valUp);
     tank.moveUp();
-    
-  }
-  else if (req.indexOf("/gpio/down") != -1)
-  {
-    
+  
+   }
+
+   if ( (valBack > 0) && (valUp == 0) && (valRight == 0) && (valLeft == 0))
+   {
+    tank.setSpd(valBack);
     tank.moveBack();
-    
-  }
-  else if (req.indexOf("/gpio/left") != -1)
-  {
-    
-    tank.left();
-    
-  } 
-  else if (req.indexOf("/gpio/right") != -1)
-  {
-    
+   }
+
+   if ( (valRight > 0) && (valBack == 0) && (valUp == 0) && (valLeft == 0))
+   {
+    tank.setSpd(valRight);
     tank.right();
-    
-  } 
-  else if (req.indexOf("/gpio/stop") != -1)
-  {
-    
-    tank.stopMove();
-    
-  }
-  else if (req.indexOf("/gpio/moveUpRight") != -1)
-  {
-  
-    tank.moveUpRight();
-    
-  }
-  else if (req.indexOf("/gpio/moveUpLeft") != -1)
-  {
-    
-   tank.moveUpLeft();
-  
-  }
-  else if (req.indexOf("/gpio/moveBackRight") != -1)
-  {
-  
-    tank.moveBackRight();
-  
-  }
-  else if (req.indexOf("/gpio/moveBackLeft") != -1)
-  {
-  
+   }
+
+   if ( (valLeft > 0) && (valBack == 0) && (valRight == 0) && (valUp == 0))
+   {
+    tank.setSpd(valLeft);
+    tank.left();
+   }
+
+   if ( (valLeft > 0) && (valBack > 0) && (valRight == 0) && (valUp == 0))
+   {
+    tank.setSpd( (valLeft + valBack) / 2);
     tank.moveBackLeft();
-    
-  }
-  else if (req.indexOf("/gpio/reverse") != -1)
-  {
-  
-    Serial.println("reverse");
-    
-    tank.setReverse();
-    
-  }
-  else if (req.indexOf("/gpio/moveSlow") != -1)
-  {
-  
-     tank.moveSlow();
-    
-  }
-  else if (req.indexOf("/gpio/moveFast") != -1)
-  {
-  
-    tank.moveFast();
-    
-  }
-  else
-  {
-  
-   Serial.println("invalid");
-  
-  }
-  
-  client.flush();
-  
-  String s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\n ";
-  
-  s += "<center><a href='http://"+IP+"/gpio/moveUpLeft'>UP AND LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/up'>UP</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/moveUpRight'>UP AND RIGHT</a><br>";
-  s += "<br><a href='http:/"+IP+"/gpio/left'>LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/stop'>STOP</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/right'>RIGHT</a><br>";
-  s += "<br><a href='http://"+IP+"/gpio/moveBackLeft'>DOWN AND LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/down'>DOWN</a> &emsp;&emsp;<a href='http://"+IP+"/gpio/moveBackRight'>DOWN AND RIGHT</a><br>";
-  s += "<br><a href='http://"+IP+"/gpio/moveSlow'>SLOW MOVE</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/reverse'>REVERSE</a> &emsp;&emsp; <a href='http:/"+IP+"/gpio/moveFast'>FAST</a> <br>";
-  s += "<br>STATUS: <br><br>";
-  s += tank.getStatus();
-  s += "</center><br></html>\n";
-  
-  client.print(s);
-  delay(1);
-  Serial.println("Client disonnected");
-  
-  
-  
+   }
+
+   if ( (valLeft > 0) && (valUp > 0) && (valRight == 0) && (valBack == 0))
+   {
+    tank.setSpd( (valLeft + valUp) / 2);
+    tank.moveUpLeft();
+   }
+
+   if ( (valRight > 0) && (valBack > 0) && (valRight == 0) && (valUp == 0))
+   {
+    tank.setSpd( (valRight + valBack) / 2);
+    tank.moveBackRight();
+   }
+
+   if ( (valRight > 0) && (valUp > 0) && (valRight == 0) && (valUp == 0))
+   {
+    tank.setSpd( (valRight + valUp) / 2);
+    tank.moveUpRight();
+   }
 
 }
