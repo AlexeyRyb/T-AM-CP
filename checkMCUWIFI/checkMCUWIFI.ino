@@ -87,4 +87,9 @@ void loop()
     tank.moveUpRight();
    }
 
+   if ( (valRight == 0) && (valUp == 0) && (valRight == 0) && (valUp == 0))
+   {
+    tank.stopMove();
+   }
+
 }
