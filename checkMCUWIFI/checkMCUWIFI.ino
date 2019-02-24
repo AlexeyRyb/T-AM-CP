@@ -5,6 +5,7 @@
 #include <time.h>
 #include <TaMcP.h>
 
+bool reverseMode = false;
 
 const char* ssid = "MiInet";
 const char* password = "NubasIvan";
@@ -127,8 +128,15 @@ void loop()
   {
   
     Serial.println("reverse");
-    
-    tank.setReverse();
+    if (reverseMode)
+    {
+      reverseMode = false;
+    }
+    else
+    {
+      reverseMode = true;
+    }
+    tank.setReverse(reverseMode);
     
   }
   else if (req.indexOf("/gpio/moveSlow") != -1)
