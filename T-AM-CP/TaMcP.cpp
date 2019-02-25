@@ -107,7 +107,7 @@ void TaMcP::setSpd(int speedIn)
 
     analogWrite(_speedRight, _spd);
     analogWrite(_speedLeft, _spd);
-    statusChange("Speed change speed = " + String(_spd / _maxSpd) + "%");
+    statusChange("Speed change speed = " + String(_spd * 100.0 / _maxSpd) + "%");
 
 }
 
@@ -321,7 +321,7 @@ void TaMcP::moveSlow()
         Serial.println(_spd);
     #endif
 
-    statusChange("speed slow  speed = " + String(_spd / _maxSpd) + "%");
+    statusChange("speed slow  speed = " + String(_spd * 100.0 / _maxSpd) + "%");
     analogWrite(_speedRight, _spd);
     analogWrite(_speedLeft, _spd);
 
@@ -344,7 +344,7 @@ void TaMcP::moveFast()
         Serial.println(_spd);
     #endif
 
-    statusChange("speed fast speed = " + String(_spd / _maxSpd) + "%");
+    statusChange("speed fast speed = " + String(_spd * 100.0 / _maxSpd) + "%");
     analogWrite(_speedRight, _spd);
     analogWrite(_speedLeft, _spd);
 
