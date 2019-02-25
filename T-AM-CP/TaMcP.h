@@ -28,6 +28,7 @@ private:
     int _speedLeft;
     bool _reverseMove;
     bool _stopMoveMode;
+    int _maxSpd;
 
 public:
 

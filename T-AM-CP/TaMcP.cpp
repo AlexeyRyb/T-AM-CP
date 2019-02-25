@@ -18,7 +18,7 @@ String timePrint()
         timeStr += "0";
     }
 
-    timeStr += String( (timeNow/60)%60);
+    timeStr += String( (timeNow / 60) % 60);
     timeStr += ":";
     if (timeNow % 60 < 10)
     {
@@ -39,9 +39,10 @@ TaMcP::TaMcP(int pins[6])
     _upRight(pins[3]),
     _speedRight(pins[4]),
     _speedLeft(pins[5]),
-    _spd(255),
+    _spd(1023),
     _reverseMove(false),
-    _stopMoveMode(true)
+    _stopMoveMode(true),
+    _maxSpd(1023)
 
 {
     for (int i = 0; i < _numLog; i++)
@@ -99,8 +100,14 @@ void TaMcP::setReverse(bool statusReverse)
 
 void TaMcP::setSpd(int speedIn)
 {
+    if ((speedIn > 0) && (speedIn <= _maxSpd)) 
+    {
+        _spd = speedIn;
+    }
 
-    _spd = speedIn;
+    analogWrite(_speedRight, _spd);
+    analogWrite(_speedLeft, _spd);
+    statusChange("Speed change speed = " + String(_spd / _maxSpd) + "%");
 
 }
 
@@ -300,13 +307,13 @@ void TaMcP::moveBackLeft()
 void TaMcP::moveSlow()
 {
 
-    if (_spd < 25)
+    if (_spd < _maxSpd * 0.1)
     {
         _spd = 0;
     }
     else
     {
-        _spd = _spd - 25;
+        _spd = _spd - _maxSpd * 0.1;
     }
 
     #ifdef TaMcP_debug
@@ -314,7 +321,7 @@ void TaMcP::moveSlow()
         Serial.println(_spd);
     #endif
 
-    statusChange("speed slow");
+    statusChange("speed slow  speed = " + String(_spd / _maxSpd) + "%");
     analogWrite(_speedRight, _spd);
     analogWrite(_speedLeft, _spd);
 
@@ -324,20 +331,20 @@ void TaMcP::moveFast()
 {
 
 
-    if (_spd > 230)
+    if (_spd > _maxSpd * 0.9)
     {
-        _spd = 255;
+        _spd = _maxSpd;
     }
     else
     {
-        _spd = _spd + 25;
+        _spd = _spd + _maxSpd * 0.1;
     }
     #ifdef TaMcP_debug
         Serial.print(timePrint() + " move speed fast ");
         Serial.println(_spd);
     #endif
 
-    statusChange("speed fast");
+    statusChange("speed fast speed = " + String(_spd / _maxSpd) + "%");
     analogWrite(_speedRight, _spd);
     analogWrite(_speedLeft, _spd);
 
