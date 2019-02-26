@@ -33,10 +33,10 @@ String timePrint()
 
 TaMcP::TaMcP(int pins[6])
 :
-    _backLeft(pins[0]),
-    _upLeft(pins[1]),
-    _backRight(pins[2]),
-    _upRight(pins[3]),
+    _brakeLeft(pins[0]),
+    _dirLeft(pins[1]),
+    _brakeRight(pins[2]),
+    _dirRight(pins[3]),
     _speedRight(pins[4]),
     _speedLeft(pins[5]),
     _spd(1023),
@@ -70,10 +70,10 @@ TaMcP::TaMcP(int pins[6])
         Serial.println(_spd);
 
     #endif
-    pinMode(_upRight, OUTPUT);
-    pinMode(_upLeft, OUTPUT);
-    pinMode(_backLeft, OUTPUT);
-    pinMode(_backRight, OUTPUT);
+    pinMode(_dirRight, OUTPUT);
+    pinMode(_dirLeft, OUTPUT);
+    pinMode(_brakeLeft, OUTPUT);
+    pinMode(_brakeRight, OUTPUT);
     pinMode(_speedRight, OUTPUT);
     pinMode(_speedLeft, OUTPUT);
     analogWrite(_speedRight, _spd);
@@ -129,10 +129,8 @@ void TaMcP::stopMove()
     #ifdef TaMcP_debug
         Serial.println(timePrint() + " stopMove");
     #endif
-    digitalWrite(_upRight, false);
-    digitalWrite(_upLeft, false);
-    digitalWrite(_backLeft, false);
-    digitalWrite(_backRight, false);
+    digitalWrite(_brakeLeft, true);
+    digitalWrite(_brakeRight, true);
     delay(100);
 
 }
@@ -157,6 +155,12 @@ bool TaMcP::getReverseMode()
     return _reverseMove;
 }
 
+void TaMcP::moveBegin()
+{
+    digitalWrite(_brakeLeft, false);
+    digitalWrite(_brakeRight, false);
+
+}
 
 void TaMcP::moveUp()
 {
@@ -169,16 +173,17 @@ void TaMcP::moveUp()
         Serial.println(timePrint() + " move up");
     #endif
 
-        statusChange("move up");
+    statusChange("move up");
+    moveBegin();
     if (_reverseMove)
     {
-        digitalWrite(_backRight, true);
-        digitalWrite(_backLeft, true);
+        digitalWrite(_dirRight, false);
+        digitalWrite(_dirLeft, false);
     }
     else
     {
-        digitalWrite(_upRight, true);
-        digitalWrite(_upLeft, true);
+        digitalWrite(_dirRight, true);
+        digitalWrite(_dirLeft, true);
     }
 }
 
@@ -194,14 +199,15 @@ void TaMcP::moveBack()
     #endif
 
     statusChange("move down");
+    moveBegin();
     if (_reverseMove)
     {
-        digitalWrite(_upRight, true);
-        digitalWrite(_upLeft, true);
+        digitalWrite(_dirRight, true);
+        digitalWrite(_dirLeft, true);
     }
     else {
-        digitalWrite(_backRight, true);
-        digitalWrite(_backLeft, true);
+        digitalWrite(_dirRight, false);
+        digitalWrite(_dirLeft, false);
     }
 }
 
@@ -217,8 +223,9 @@ void TaMcP::right()
     #endif
 
     statusChange("right");
-    digitalWrite(_backRight, true);
-    digitalWrite(_upLeft, true);
+    moveBegin();
+    digitalWrite(_dirRight, false);
+    digitalWrite(_dirLeft, true);
 }
 
 void TaMcP::left()
@@ -233,8 +240,9 @@ void TaMcP::left()
     #endif
 
     statusChange("left");
-    digitalWrite(_upRight, true);
-    digitalWrite(_backLeft, true);
+    moveBegin();
+    digitalWrite(_dirRight, true);
+    digitalWrite(_dirLeft, false);
 }
 
 
@@ -250,13 +258,17 @@ void TaMcP::moveUpRight()
     #endif
 
     statusChange("move up and right");
+    moveBegin();
+
     if (_reverseMove)
     {
-        digitalWrite(_backRight, true);
+        digitalWrite(_brakeLeft, true);
+        digitalWrite(_dirRight, false);
     }
     else
     {
-        digitalWrite(_upLeft, true);
+        digitalWrite(_brakeRight, true);
+        digitalWrite(_dirLeft, true);
     }
 }
 
@@ -272,13 +284,16 @@ void TaMcP::moveUpLeft()
     #endif
 
     statusChange("move up and left");
+    moveBegin();
     if (_reverseMove)
     {
-        digitalWrite(_backLeft, true);
+        digitalWrite(_brakeRight, true);
+        digitalWrite(_dirLeft, false);
     }
     else
     {
-        digitalWrite(_upRight, true);
+        digitalWrite(_brakeLeft, true);
+        digitalWrite(_dirRight, true);
     }
 }
 
@@ -294,13 +309,16 @@ void TaMcP::moveBackRight()
     #endif
 
     statusChange("move down and right");
+    moveBegin();
     if (_reverseMove)
     {
-        digitalWrite(_upRight, true);
+        digitalWrite(_brakeLeft, true);
+        digitalWrite(_dirRight, true);
     }
     else
     {
-        digitalWrite(_backLeft, true);
+        digitalWrite(_brakeRight, true);
+        digitalWrite(_dirLeft, false);
     }
 }
 
@@ -316,13 +334,16 @@ void TaMcP::moveBackLeft()
     #endif
 
     statusChange("move down and left");
+    moveBegin();
     if (_reverseMove)
     {
-        digitalWrite(_upLeft, true);
+        digitalWrite(_brakeRight, true);
+        digitalWrite(_dirLeft, true);
     }
     else
     {
-        digitalWrite(_backRight, true);
+        digitalWrite(_brakeLeft, true);
+        digitalWrite(_dirRight, false);
     }
 }
 

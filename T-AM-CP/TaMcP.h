@@ -20,15 +20,16 @@ private:
 
     int _spd;
 
-    int _backLeft;
-    int _upLeft;
-    int _backRight;
-    int _upRight;
+    int _brakeLeft;
+    int _dirLeft;
+    int _brakeRight;
+    int _dirRight;
     int _speedRight;
     int _speedLeft;
     bool _reverseMove;
     bool _stopMoveMode;
     int _maxSpd;
+    void moveBegin();
 
 public:
 
@@ -38,6 +39,7 @@ public:
     String getStatus();
 
     void setReverse(bool statusMode);
+    bool getReverseMode();
 
     void moveUp();
     void moveBack();
@@ -51,9 +53,16 @@ public:
 
     void moveSlow();
     void moveFast();
+
     void setSpd(int speedIn);
+    int getSpd();
+    int getMaxSpd();
+    void setMaxSpd(int speedIn);
 
     void setStopMoveMode();
+    bool getStopMoveMode();
+
+    
 
 
 
