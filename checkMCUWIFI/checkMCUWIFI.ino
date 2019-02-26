@@ -46,7 +46,7 @@ void setup()
   Serial.println("WiFi connected");
   
   server.begin();
-  Serial.println("Server started");\
+  Serial.println("Server started");
   
   IP = WiFi.localIP().toString();
 } 
