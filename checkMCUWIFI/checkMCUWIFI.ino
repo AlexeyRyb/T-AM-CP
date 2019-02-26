@@ -1,13 +1,22 @@
 #include <time.h>
 #include <TaMcP.h>
 
+const int brakeLeft = 9;
+const int dirLeft = 12;
+const int brakeRight = 8;
+const int dirRight = 13;
+const int speedLeft = 11;
+const int speedRight = 3;
 
-int pins[6] = {D5, D6, D7, D8, D1, D2};
-const int moveUp =  9;
-const int moveDown = 10;
-const int right =   13;
-const int left = 14;
-const int reverse = 11;
+int pins[6] = {brakeLeft, dirLeft, brakeRight, dirRight, speedLeft, speedRight};
+
+const int moveUp =  3;
+const int moveDown = 6;
+const int right =   2;
+const int left = 4;
+const int reverseMode = 7;
+
+const int check = 5;
 
 TaMcP tank = TaMcP(pins);
 
@@ -21,7 +30,8 @@ void setup()
   pinMode(moveDown, INPUT);
   pinMode(right, INPUT);
   pinMode(left, INPUT);
-  pinMode(reverse, INPUT);
+  pinMode(reverseMode, INPUT);
+  pinMode(check, OUTPUT);
   
   Serial.println("Ready");
   tank.setStopMoveMode();
@@ -29,66 +39,67 @@ void setup()
 
 void loop() 
 { 
-   int valUp = analogRead(moveUp);
-   int valBack = analogRead(moveDown);
-   int valRight = analogRead(right);
-   int valLeft = analogRead(left);
-   int valReverse = digitalRead(reverse);
+   int valUp = digitalRead(moveUp);
+   int valBack = digitalRead(moveDown);
+   int valRight = digitalRead(right);
+   int valLeft = digitalRead(left);
+   int valReverse = digitalRead(reverseMode);
+
+   analogWrite(check, 255);
 
    tank.setReverse(valReverse);
 
-   if ( (valUp > 0) && (valBack == 0) && (valRight == 0) && (valLeft == 0))
+   if ( valUp && !valBack && !valRight && !valLeft )
    {
-    
-    tank.setSpd(valUp);
+    Serial.println("move up");
     tank.moveUp();
-  
    }
 
-   if ( (valBack > 0) && (valUp == 0) && (valRight == 0) && (valLeft == 0))
+   if ( valBack && !valUp && !valRight && !valLeft)
    {
-    tank.setSpd(valBack);
+    Serial.println("move back");
     tank.moveBack();
    }
 
-   if ( (valRight > 0) && (valBack == 0) && (valUp == 0) && (valLeft == 0))
+   if ( valRight && !valBack && !valUp && !valLeft )
    {
-    tank.setSpd(valRight);
+    Serial.println("right");
     tank.right();
    }
 
-   if ( (valLeft > 0) && (valBack == 0) && (valRight == 0) && (valUp == 0))
+   if ( valLeft && !valBack && !valRight && !valUp )
    {
-    tank.setSpd(valLeft);
+    Serial.println("left");
     tank.left();
    }
 
-   if ( (valLeft > 0) && (valBack > 0) && (valRight == 0) && (valUp == 0))
+   if ( valLeft && valBack  && !valRight && !valUp )
    {
-    tank.setSpd( (valLeft + valBack) / 2);
+    Serial.println("move back and left");
     tank.moveBackLeft();
    }
 
-   if ( (valLeft > 0) && (valUp > 0) && (valRight == 0) && (valBack == 0))
+   if ( valLeft && valUp && !valRight && !valBack )
    {
-    tank.setSpd( (valLeft + valUp) / 2);
+    Serial.println("move up left");
     tank.moveUpLeft();
    }
 
-   if ( (valRight > 0) && (valBack > 0) && (valRight == 0) && (valUp == 0))
+   if ( valRight && valBack  && !valLeft && !valUp )
    {
-    tank.setSpd( (valRight + valBack) / 2);
+    Serial.println("move back and right");
     tank.moveBackRight();
    }
 
-   if ( (valRight > 0) && (valUp > 0) && (valRight == 0) && (valUp == 0))
+   if ( valRight && valUp && !valLeft  && !valBack )
    {
-    tank.setSpd( (valRight + valUp) / 2);
+    Serial.println("move up and right");
     tank.moveUpRight();
    }
 
-   if ( (valRight == 0) && (valUp == 0) && (valRight == 0) && (valUp == 0))
+   if ( !valRight && !valUp && !valLeft && !valBack )
    {
+    Serial.println("stop move");
     tank.stopMove();
    }
 
