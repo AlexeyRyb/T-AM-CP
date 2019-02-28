@@ -1,5 +1,5 @@
 #include <time.h>
-#include <TaMcP.h>
+#include <controlTaMcP.h>
 
 const int brakeLeft = 9;
 const int dirLeft = 12;
@@ -18,7 +18,7 @@ const int reverseMode = 7;
 
 const int check = 5;
 
-TaMcP tank = TaMcP(pins);
+controlTaMcP tankAM = controlTaMcP(pins);
 
 void setup() 
 { 
@@ -34,7 +34,7 @@ void setup()
   pinMode(check, OUTPUT);
   
   Serial.println("Ready");
-  tank.setStopMoveMode();
+  tankAM.setStopMoveMode();
 } 
 
 void loop() 
@@ -47,60 +47,63 @@ void loop()
 
    analogWrite(check, 255);
 
-   tank.setReverse(valReverse);
+   int spdPlus = 1023;
+   int spdMinus = -1023;
+   
+   tankAM.setReverse(valReverse);
 
    if ( valUp && !valBack && !valRight && !valLeft )
    {
     Serial.println("move up");
-    tank.moveUp();
+    tankAM.moveT(spdPlus, spdPlus);
    }
 
    if ( valBack && !valUp && !valRight && !valLeft)
    {
-    Serial.println("move back");
-    tank.moveBack();
+    Serial.println("move down");
+    tankAM.moveT(spdMinus, spdMinus);
    }
 
    if ( valRight && !valBack && !valUp && !valLeft )
    {
     Serial.println("right");
-    tank.right();
+    tankAM.moveT(spdPlus, spdMinus);
    }
 
    if ( valLeft && !valBack && !valRight && !valUp )
    {
     Serial.println("left");
-    tank.left();
+    tankAM.moveT(spdMinus, spdPlus);
    }
 
    if ( valLeft && valBack  && !valRight && !valUp )
    {
-    Serial.println("move back and left");
-    tank.moveBackLeft();
+    Serial.println("move down and left");
+    tankAM.moveT(0, spdMinus);
    }
 
    if ( valLeft && valUp && !valRight && !valBack )
    {
     Serial.println("move up left");
-    tank.moveUpLeft();
+    tankAM.moveT(0, spdPlus);
    }
 
    if ( valRight && valBack  && !valLeft && !valUp )
    {
-    Serial.println("move back and right");
-    tank.moveBackRight();
+    Serial.println("move down and right");
+    tankAM.moveT(spdMinus, 0);
    }
 
    if ( valRight && valUp && !valLeft  && !valBack )
    {
     Serial.println("move up and right");
-    tank.moveUpRight();
+    tankAM.moveT(spdPlus, 0);
    }
 
    if ( !valRight && !valUp && !valLeft && !valBack )
    {
     Serial.println("stop move");
-    tank.stopMove();
+    tankAM.moveT(0, 0);
    }
 
 }

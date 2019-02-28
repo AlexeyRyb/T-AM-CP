@@ -1,3 +1,15 @@
+#ifndef TaMcP_H
+#define TaMcP_H
+
+#if ARDUINO >= 100
+#include <Arduino.h>
+#else
+#include <WProgram.h>
+#endif
+
+#include "defines.h"
+
+
 class TaMcP
 {
     private:
@@ -16,17 +28,17 @@ class TaMcP
         TaMcP(int pins[6]);
 
         void moveUp();
-        void moveBack();
+        void moveDown();
         void right();
         void left();
         void moveUpRight();
         void moveUpLeft();
-        void moveBackRight();
-        void moveBackLeft();
-        void stopMove();
+        void moveDownRight();
+        void moveDownLeft();
+        void stopMove(int msec);
 
         
-        void setSpd(int speedIn);
+        void setSpd(int speedInRight, int speedInLeft, int maxSpd);
         
 };
 

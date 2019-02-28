@@ -15,8 +15,10 @@ TaMcP::TaMcP(int pins[6])
     
 
     #ifdef TaMcP_debug
+        
         Serial.println(timePrint()+" TaMcP init");
         Serial.print("Pins: ");
+        
         for (int i = 0; i < 6; i++)
         {
             Serial.print(pins[i]);
@@ -24,6 +26,7 @@ TaMcP::TaMcP(int pins[6])
         }
         
     #endif
+
     pinMode(_dirRight, OUTPUT);
     pinMode(_dirLeft, OUTPUT);
     pinMode(_brakeLeft, OUTPUT);
@@ -50,7 +53,7 @@ void TaMcP::setSpd(int speedInRight, int speedInLeft, int maxSpd)
 }
 
 
-void TaMcP::stopMove(int sec)
+void TaMcP::stopMove(int msec)
 {
 
     #ifdef TaMcP_debug
@@ -60,7 +63,7 @@ void TaMcP::stopMove(int sec)
     digitalWrite(_brakeLeft, true);
     digitalWrite(_brakeRight, true);
 
-    delay(sec);
+    delay(msec);
 
 }
 
@@ -80,7 +83,6 @@ void TaMcP::moveUp()
         Serial.println(timePrint() + " move up");
     #endif
 
-    statusChange("move up");
     moveBegin();
 
     digitalWrite(_dirRight, true);
@@ -88,14 +90,13 @@ void TaMcP::moveUp()
 
 }
 
-void TaMcP::moveBack()
+void TaMcP::moveDown()
 {
 
     #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move back");
+        Serial.println(timePrint() + " move down");
     #endif
 
-    statusChange("move down");
     moveBegin();
 
     digitalWrite(_dirRight, false);
@@ -109,8 +110,8 @@ void TaMcP::right()
         Serial.println(timePrint() + " move right");
     #endif
 
-    statusChange("right");
     moveBegin();
+
     digitalWrite(_dirRight, false);
     digitalWrite(_dirLeft, true);
 }
@@ -122,7 +123,6 @@ void TaMcP::left()
         Serial.println(timePrint() + " move left");
     #endif
 
-    statusChange("left");
     moveBegin();
 
     digitalWrite(_dirRight, true);
@@ -137,7 +137,6 @@ void TaMcP::moveUpRight()
         Serial.println(timePrint() + " move up and right");
     #endif
 
-    statusChange("move up and right");
     moveBegin();
 
     digitalWrite(_brakeRight, true);
@@ -151,35 +150,34 @@ void TaMcP::moveUpLeft()
         Serial.println(timePrint() + " move up and left");
     #endif
 
-    statusChange("move up and left");
     moveBegin();
+
     digitalWrite(_brakeLeft, true);
     digitalWrite(_dirRight, true);
 }
 
-void TaMcP::moveBackRight()
+void TaMcP::moveDownRight()
 {
 
     #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move back and right");
+        Serial.println(timePrint() + " move down and right");
     #endif
 
-    statusChange("move down and right");
     moveBegin();
 
     digitalWrite(_brakeRight, true);
     digitalWrite(_dirLeft, false);
 }
 
-void TaMcP::moveBackLeft()
+void TaMcP::moveDownLeft()
 {
 
     #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move back and left");
+        Serial.println(timePrint() + " move down and left");
     #endif
 
-    statusChange("move down and left");
     moveBegin();
+
     digitalWrite(_brakeLeft, true);
     digitalWrite(_dirRight, false);
 }

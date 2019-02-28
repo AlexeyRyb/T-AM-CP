@@ -1,4 +1,4 @@
-#include "controlTaMcP"
+#include "controlTaMcP.h"
 
 
 String timePrint()
@@ -31,9 +31,9 @@ String timePrint()
     return timeStr;
 }
 
-void controlTaMcP::controlTaMcP(int pinIn[6])
+controlTaMcP::controlTaMcP(int pinIn[6])
 :
-    tank(pinIn),
+    _tank(pinIn),
     _spdRight(_spdMotor),
     _spdLeft(_spdMotor),
     _reverseMove(false),
@@ -60,7 +60,7 @@ void controlTaMcP::controlTaMcP(int pinIn[6])
 
     #endif
 
-    tank.setSpd(_spdRight, _spdLeft, _maxSpd);
+    _tank.setSpd(_spdRight, _spdLeft, _maxSpd);
     
 
 }
@@ -80,7 +80,7 @@ void controlTaMcP::statusChange(String newStatus)
 
 
 
-String TaMcP::getStatus()
+String  controlTaMcP::getStatus()
 {
     String s = "";
 
@@ -113,9 +113,14 @@ void controlTaMcP::setStopMoveMode()
     _stopMoveMode = !_stopMoveMode;
 }
 
-int controlTaMcP::getSpd()
+int controlTaMcP::getSpdRight()
 {
-    return _spd;
+    return _spdRight;
+}
+
+int controlTaMcP::getSpdLeft()
+{
+    return _spdLeft;
 }
 
 int controlTaMcP::getMaxSpd()
@@ -133,21 +138,21 @@ bool controlTaMcP::getReverseMode()
     return _reverseMove;
 }
 
-void controlTaMcP::setSpd(int speedInRight, int speedInLeft)
+void controlTaMcP::setSpdT(int speedInRight, int speedInLeft)
 {
 
-    if ((speedInRight > 0) && (speedInRight <= maxSpd) && (speedInLeft > 0) && (speedInLeft <= maxSpd)) 
+    if ((speedInRight > 0) && (speedInRight <= _maxSpd) && (speedInLeft > 0) && (speedInLeft <= _maxSpd)) 
     {
         _spdRight = speedInRight;
         _spdLeft = speedInLeft;
-        tank.setSpd(speedInRight, speedInLeft, _maxSpd)
+        _tank.setSpd(speedInRight, speedInLeft, _maxSpd);
     }
 
-    statusChange("Speed change speed = " + String(_spd * 100.0 / _maxSpd) + "%");
+    statusChange("Speed change speed right = " + String(_spdRight * 100.0 / _maxSpd) + "% and speed left = " + String(_spdLeft * 100.0 / _maxSpd) + "%");
 
 }
 
-void TaMcP::moveSlow(bool rightIn = true, bool leftIn = true, int del1, int del2)
+void controlTaMcP::moveSlow(bool rightIn, bool leftIn, int del1, int del2)
 {
     int delPer1 = 0;
     int delPer2 = 0;
@@ -200,10 +205,10 @@ void TaMcP::moveSlow(bool rightIn = true, bool leftIn = true, int del1, int del2
         Serial.println(_spdLeft);
     #endif
 
-    tank.setSpd(_spdRight, _spdLeft, _maxSpd)
+    _tank.setSpd(_spdRight, _spdLeft, _maxSpd);
 }
 
-void TaMcP::moveFast(bool rightIn = true, bool leftIn = true, int del1, int del2)
+void controlTaMcP::moveFast(bool rightIn, bool leftIn, int del1, int del2)
 {
     int delPer1 = 0;
     int delPer2 = 0;
@@ -254,9 +259,86 @@ void TaMcP::moveFast(bool rightIn = true, bool leftIn = true, int del1, int del2
         Serial.println(_spd);
     #endif
 
-    tank.setSpd(_spdRight, _spdLeft, _maxSpd)
+    _tank.setSpd(_spdRight, _spdLeft, _maxSpd);
 }
 
+void controlTaMcP::moveT(int speedLeft, int speedRight)
+{
+    if ( (speedRight <  1024) && (speedRight > -1024) && (speedLeft < 1024) && (speedLeft > -1024))
+    {
+        setSpdT(abs(speedRight), abs(speedLeft));
 
+        //CLUTCH
+        if (_reverseMove)
+        {
+            speedRight = (-1) * speedRight;
+            speedLeft = (-1) * speedLeft;
+        }
+
+        if (_stopMoveMode)
+        {
+            _tank.stopMove(100);
+        }
+
+        
+        if ((speedRight > 0) && (speedLeft > 0))
+        {
+            statusChange("move up");
+            _tank.moveUp();
+        }
+        
+        if ((speedRight > 0) && (speedLeft < 0))
+        {
+            statusChange("left");
+            _tank.left();
+        }
+        
+        if ((speedRight < 0) && (speedLeft < 0))
+        {
+            statusChange("move down");
+            _tank.moveDown();
+        }
+        
+        if ((speedRight < 0) && (speedLeft > 0))
+        {
+            statusChange("right");
+            _tank.right();
+        }
+        
+        if ((speedRight > 0) && (speedLeft = 0))
+        {
+            statusChange("move up and left");
+            _tank.moveUpLeft();
+        }
+        
+        if ((speedRight = 0) && (speedLeft > 0))
+        {
+            statusChange("move up and right");
+            _tank.moveUpRight();
+        }
+        
+        if ((speedRight < 0) && (speedLeft = 0))
+        {
+            statusChange("move down and left");
+            _tank.moveDownLeft();
+        }
+        
+        if ((speedRight = 0) && (speedLeft < 0))
+        {
+            statusChange("move down and right");
+            _tank.moveDownRight();
+        }
+        
+        if ((speedRight = 0) && (speedLeft = 0))
+        {
+            statusChange("stop move");
+            _tank.stopMove(100);
+        }
+
+
+    }
+
+
+}
 
 

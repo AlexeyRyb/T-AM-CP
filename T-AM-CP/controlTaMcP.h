@@ -26,12 +26,13 @@ class controlTaMcP
         bool _reverseMove;
         bool _stopMoveMode;
         int _maxSpd;
-        TaMcP tank;
+
+        TaMcP _tank;
         void moveT();
 
   	public:
 
-  		controlTaMcP(int pins[6]);
+  		controlTaMcP(int pinIn[6]);
 
   		void statusChange(String newStatus);
         String getStatus();
@@ -39,16 +40,22 @@ class controlTaMcP
         void setReverse(bool statusMode);
         bool getReverseMode();
 
-        int getSpd();
+        int getSpdRight();
+        int getSpdLeft();
         int getMaxSpd();
         void setMaxSpd(int speedIn);
 
         void setStopMoveMode();
         bool getStopMoveMode();
 
-        void moveSlow();
-        void moveFast();
+        void setSpdT(int spdInRight, int spdInLeft);
+        void moveSlow(bool rightIn, bool leftIn, int del1, int del2);
+        void moveFast(bool rightIn, bool leftIn, int del1, int del2);
+
+        void moveT(int speedRight, int speedLeft);
 
 
 
 };
+
+#endif
