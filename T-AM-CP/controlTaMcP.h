@@ -30,6 +30,8 @@ class controlTaMcP
         TaMcP _tank;
         void moveT();
 
+        int _msecStop;
+
   	public:
 
   		controlTaMcP(int pinIn[6]);
@@ -53,6 +55,9 @@ class controlTaMcP
         void moveFast(bool rightIn, bool leftIn, int del1, int del2);
 
         void moveT(int speedRight, int speedLeft);
+
+		void setMsecStop(int msecIn);
+		int getMsecStop();
 
 
 

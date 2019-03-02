@@ -38,7 +38,7 @@ class TaMcP
         void stopMove(int msec);
 
         
-        void setSpd(int speedInRight, int speedInLeft, int maxSpd);
+        void setSpd(int speedInLeft, int speedInRight, int maxSpd);
         
 };
 

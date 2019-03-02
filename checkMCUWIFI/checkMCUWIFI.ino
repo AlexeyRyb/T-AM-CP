@@ -10,14 +10,6 @@ const int speedRight = 3;
 
 int pins[6] = {brakeLeft, dirLeft, brakeRight, dirRight, speedLeft, speedRight};
 
-const int moveUp =  3;
-const int moveDown = 6;
-const int right =   2;
-const int left = 4;
-const int reverseMode = 7;
-
-const int check = 5;
-
 controlTaMcP tankAM = controlTaMcP(pins);
 
 void setup() 
@@ -26,84 +18,18 @@ void setup()
   Serial.begin(115200); 
   Serial.setTimeout(100); 
   
-  pinMode(moveUp, INPUT);
-  pinMode(moveDown, INPUT);
-  pinMode(right, INPUT);
-  pinMode(left, INPUT);
-  pinMode(reverseMode, INPUT);
-  pinMode(check, OUTPUT);
-  
   Serial.println("Ready");
-  tankAM.setStopMoveMode();
+  tankAM.setMaxSpd(255);
 } 
 
 void loop() 
 { 
-   int valUp = digitalRead(moveUp);
-   int valBack = digitalRead(moveDown);
-   int valRight = digitalRead(right);
-   int valLeft = digitalRead(left);
-   int valReverse = digitalRead(reverseMode);
-
-   analogWrite(check, 255);
-
-   int spdPlus = 1023;
-   int spdMinus = -1023;
-   
-   tankAM.setReverse(valReverse);
-
-   if ( valUp && !valBack && !valRight && !valLeft )
+  
+   if (Serial.available() > 0)
    {
-    Serial.println("move up");
-    tankAM.moveT(spdPlus, spdPlus);
-   }
+      int leftSpd = Serial.parseInt();
+      int rightSpd = Serial.parseInt();
 
-   if ( valBack && !valUp && !valRight && !valLeft)
-   {
-    Serial.println("move down");
-    tankAM.moveT(spdMinus, spdMinus);
+      tankAM.moveT(leftSpd, rightSpd);
    }
-
-   if ( valRight && !valBack && !valUp && !valLeft )
-   {
-    Serial.println("right");
-    tankAM.moveT(spdPlus, spdMinus);
-   }
-
-   if ( valLeft && !valBack && !valRight && !valUp )
-   {
-    Serial.println("left");
-    tankAM.moveT(spdMinus, spdPlus);
-   }
-
-   if ( valLeft && valBack  && !valRight && !valUp )
-   {
-    Serial.println("move down and left");
-    tankAM.moveT(0, spdMinus);
-   }
-
-   if ( valLeft && valUp && !valRight && !valBack )
-   {
-    Serial.println("move up left");
-    tankAM.moveT(0, spdPlus);
-   }
-
-   if ( valRight && valBack  && !valLeft && !valUp )
-   {
-    Serial.println("move down and right");
-    tankAM.moveT(spdMinus, 0);
-   }
-
-   if ( valRight && valUp && !valLeft  && !valBack )
-   {
-    Serial.println("move up and right");
-    tankAM.moveT(spdPlus, 0);
-   }
-
-   if ( !valRight && !valUp && !valLeft && !valBack )
-   {
-    Serial.println("stop move");
-    tankAM.moveT(0, 0);
-   }
-
 }

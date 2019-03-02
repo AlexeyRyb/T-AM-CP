@@ -8,8 +8,8 @@ TaMcP::TaMcP(int pins[6])
     _dirLeft(pins[1]),
     _brakeRight(pins[2]),
     _dirRight(pins[3]),
-    _speedRight(pins[4]),
-    _speedLeft(pins[5])
+    _speedLeft(pins[4]),
+    _speedRight(pins[5])
 
 {
     
@@ -31,8 +31,8 @@ TaMcP::TaMcP(int pins[6])
     pinMode(_dirLeft, OUTPUT);
     pinMode(_brakeLeft, OUTPUT);
     pinMode(_brakeRight, OUTPUT);
-    pinMode(_speedRight, OUTPUT);
     pinMode(_speedLeft, OUTPUT);
+    pinMode(_speedRight, OUTPUT);
 }
 
 
@@ -44,7 +44,7 @@ void TaMcP::setSpd(int speedInRight, int speedInLeft, int maxSpd)
         analogWrite(_speedRight, speedInRight);
     
     }
-    if ((speedInRight > 0) && (speedInRight <= maxSpd)) 
+    if ((speedInLeft > 0) && (speedInLeft <= maxSpd))
     {
         analogWrite(_speedLeft, speedInLeft);
     
