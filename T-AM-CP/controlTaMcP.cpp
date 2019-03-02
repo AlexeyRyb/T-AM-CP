@@ -109,9 +109,9 @@ void controlTaMcP::setMaxSpd(int speedIn)
     }
 }
 
-void controlTaMcP::setStopMoveMode()
+void controlTaMcP::setStopMoveMode(bool statusStopMoveMode)
 {
-    _stopMoveMode = !_stopMoveMode;
+    _stopMoveMode = statusStopMoveMode;
 }
 
 int controlTaMcP::getSpdRight()
@@ -165,182 +165,235 @@ void controlTaMcP::setSpdT(int speedInLeft, int speedInRight)
 
 }
 
-void controlTaMcP::moveSlow(bool leftIn, bool rightIn, int delLeft, int delRight)
+void controlTaMcP::moveSlow(bool sideIn, int delta)
 {
-    double delPerLeft = 0;
-    double delPerRight = 0;
-    
-    if ( (delLeft < 100) && (delLeft > 0) )
+    Serial.println(delta);
+    if ( (delta < 100) && (delta > 0) )
     {
-        delPerLeft = delLeft / 100;
-    }
 
-    if ( (delRight < 100) && (delRight > 0) )
-    {
-        delPerRight = delRight / 100;
-    }
+        double deltaPer = delta / 100.0;
 
-    if (rightIn)
-    {
-        if (_spdRight < _maxSpd * delPerRight)
+        if (!sideIn)
         {
-            _spdRight = 0;
-        }
-        else
-        {
-            _spdRight = _spdRight - _maxSpd * delPerRight;
+
+            if (_spdRight < _maxSpd * deltaPer)
+            {
+                _spdRight = 0;
+            }
+            else
+            {
+                _spdRight = _spdRight - _maxSpd * deltaPer;
+            }
 
         }
 
-    }
-    
-    if (leftIn)
-    {
-        if (_spdLeft < _maxSpd * delPerLeft)
+        if (sideIn)
         {
-            _spdLeft = 0;
-        }
-        else
-        {
-            _spdLeft = _spdLeft - _maxSpd * delPerLeft;
+
+            if (_spdLeft < _maxSpd * deltaPer)
+            {
+                _spdLeft = 0;
+            }
+            else
+            {
+                _spdLeft = _spdLeft - _maxSpd * deltaPer;
+            }
 
         }
+
+        #ifdef controlTaMcP_debug
+            Serial.print(timePrint() + " move speed slow right = ");
+            Serial.print(_spdRight);
+            Serial.print(" and left = ");
+            Serial.println(_spdLeft);
+        #endif
+
+        _tank.setSpd(_spdLeft, _spdRight, _maxSpd);
 
     }
-    #ifdef controlTaMcP_debug
-        Serial.print(timePrint() + " move speed slow right = ");
-        Serial.print(_spdRight);
-        Serial.print(" and left = ");
-        Serial.println(_spdLeft);
-    #endif
-
-    _tank.setSpd(_spdLeft, _spdRight, _maxSpd);
 
 }
 
-void controlTaMcP::moveFast(bool leftIn, bool rightIn, int delLeft, int delRight)
+void controlTaMcP::moveFast(bool sideIn, int delta)
 {
-    int delPerLeft = 0;
-    int delPerRight = 0;
-    
-    if ((delLeft < 100) && (delLeft > 0))
-    {
-        delPerLeft = delLeft / 100;
-    }
 
-    if ((delRight < 100) && (delRight > 0))
+    if ((delta < 100) && (delta > 0))
     {
-        delPerRight = delRight / 100;
-    }
 
-    if (rightIn)
-    {
-        if (_spdRight > _maxSpd * (1 - delPerRight) )
+        double deltaPer = delta / 100.0;
+
+        if (!sideIn)
         {
-            _spdRight = _maxSpd;
-        }
-        else
-        {
-            _spdRight = _spdRight + _maxSpd * delPerRight;
+
+            if (_spdRight > _maxSpd * (1 - deltaPer))
+            {
+                _spdRight = _maxSpd;
+            }
+            else
+            {
+                _spdRight = _spdRight + _maxSpd * deltaPer;
+            }
 
         }
 
-    }
-    
-    if (leftIn)
-    {
-        if (_spdLeft > _maxSpd * delPerLeft)
+        if (sideIn)
         {
-            _spdLeft = _maxSpd;
-        }
-        else
-        {
-            _spdLeft = _spdLeft + _maxSpd * delPerLeft;
+
+            if (_spdLeft > _maxSpd * deltaPer)
+            {
+                _spdLeft = _maxSpd;
+            }
+            else
+            {
+                _spdLeft = _spdLeft + _maxSpd * deltaPer;
+            }
 
         }
 
+        #ifdef controlTaMcP_debug
+                    Serial.print(timePrint() + " move speed slow ");
+                    Serial.println(_spd);
+        #endif
+
+        _tank.setSpd(_spdLeft, _spdRight, _maxSpd);
 
     }
-    #ifdef controlTaMcP_debug
-        Serial.print(timePrint() + " move speed slow ");
-        Serial.println(_spd);
-    #endif
-
-    _tank.setSpd(_spdLeft, _spdRight, _maxSpd);
 }
 
 void controlTaMcP::moveT(int speedLeft, int speedRight)
 {
-    if ( (speedRight <  1024) && (speedRight > -1024) && (speedLeft < 1024) && (speedLeft > -1024))
+    if ( (speedRight <  _maxSpd + 1) && (speedRight > -_maxSpd - 1) && (speedLeft < _maxSpd + 1) && (speedLeft > -_maxSpd - 1))
     {
-        setSpdT(abs(speedRight), abs(speedLeft));
-
-        //CLUTCH
-        if (_reverseMove)
-        {
-            speedRight = (-1) * speedLeft;
-            speedLeft = (-1) * speedRight;
-        }
 
         if (_stopMoveMode)
         {
             _tank.stopMove(_msecStop);
         }
 
-        
-        if ((speedRight > 0) && (speedLeft > 0))
+        if (_reverseMove)
         {
-            statusChange("move up");
-            _tank.moveUp();
+
+            setSpdT(abs(speedRight), abs(speedLeft));
+
+            if ((speedRight < 0) && (speedLeft < 0))
+            {
+                statusChange("move up");
+                _tank.moveUp();
+            }
+
+            if ((speedRight > 0) && (speedLeft < 0))
+            {
+                statusChange("left");
+                _tank.left();
+            }
+
+            if ((speedRight > 0) && (speedLeft > 0))
+            {
+                statusChange("move down");
+                _tank.moveDown();
+            }
+
+            if ((speedRight < 0) && (speedLeft > 0))
+            {
+                statusChange("right");
+                _tank.right();
+            }
+
+            if ((speedRight == 0) && (speedLeft < 0))
+            {
+                statusChange("move up and left");
+                _tank.moveUpLeft();
+            }
+
+            if ((speedRight < 0) && (speedLeft == 0))
+            {
+                statusChange("move up and right");
+                _tank.moveUpRight();
+            }
+
+            if ((speedRight == 0) && (speedLeft > 0))
+            {
+                statusChange("move down and left");
+                _tank.moveDownLeft();
+            }
+
+            if ((speedRight > 0) && (speedLeft == 0))
+            {
+                statusChange("move down and right");
+                _tank.moveDownRight();
+            }
+
+            if ((speedRight == 0) && (speedLeft == 0))
+            {
+                statusChange("stop move");
+                _tank.stopMove(_msecStop);
+            }
+
+
         }
-        
-        if ((speedRight > 0) && (speedLeft < 0))
+        else
         {
-            statusChange("left");
-            _tank.left();
+            setSpdT(abs(speedLeft), abs(speedRight));
+
+            if ((speedRight > 0) && (speedLeft > 0))
+            {
+                statusChange("move up");
+                _tank.moveUp();
+            }
+
+            if ((speedRight > 0) && (speedLeft < 0))
+            {
+                statusChange("left");
+                _tank.left();
+            }
+
+            if ((speedRight < 0) && (speedLeft < 0))
+            {
+                statusChange("move down");
+                _tank.moveDown();
+            }
+
+            if ((speedRight < 0) && (speedLeft > 0))
+            {
+                statusChange("right");
+                _tank.right();
+            }
+
+            if ((speedRight > 0) && (speedLeft == 0))
+            {
+                statusChange("move up and left");
+                _tank.moveUpLeft();
+            }
+
+            if ((speedRight == 0) && (speedLeft > 0))
+            {
+                statusChange("move up and right");
+                _tank.moveUpRight();
+            }
+
+            if ((speedRight < 0) && (speedLeft == 0))
+            {
+                statusChange("move down and left");
+                _tank.moveDownLeft();
+            }
+
+            if ((speedRight == 0) && (speedLeft < 0))
+            {
+                statusChange("move down and right");
+                _tank.moveDownRight();
+            }
+
+            if ((speedRight == 0) && (speedLeft == 0))
+            {
+                statusChange("stop move");
+                _tank.stopMove(100);
+            }
+
         }
+
+
         
-        if ((speedRight < 0) && (speedLeft < 0))
-        {
-            statusChange("move down");
-            _tank.moveDown();
-        }
-        
-        if ((speedRight < 0) && (speedLeft > 0))
-        {
-            statusChange("right");
-            _tank.right();
-        }
-        
-        if ((speedRight > 0) && (speedLeft == 0))
-        {
-            statusChange("move up and left");
-            _tank.moveUpLeft();
-        }
-        
-        if ((speedRight == 0) && (speedLeft > 0))
-        {
-            statusChange("move up and right");
-            _tank.moveUpRight();
-        }
-        
-        if ((speedRight < 0) && (speedLeft == 0))
-        {
-            statusChange("move down and left");
-            _tank.moveDownLeft();
-        }
-        
-        if ((speedRight == 0) && (speedLeft < 0))
-        {
-            statusChange("move down and right");
-            _tank.moveDownRight();
-        }
-        
-        if ((speedRight == 0) && (speedLeft == 0))
-        {
-            statusChange("stop move");
-            _tank.stopMove(100);
-        }
+
 
 
     }

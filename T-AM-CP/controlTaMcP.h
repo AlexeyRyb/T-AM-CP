@@ -47,12 +47,12 @@ class controlTaMcP
         int getMaxSpd();
         void setMaxSpd(int speedIn);
 
-        void setStopMoveMode();
+        void setStopMoveMode(bool statusStopMoveMode);
         bool getStopMoveMode();
 
         void setSpdT(int spdInRight, int spdInLeft);
-        void moveSlow(bool rightIn, bool leftIn, int del1, int del2);
-        void moveFast(bool rightIn, bool leftIn, int del1, int del2);
+        void moveSlow(bool sideIn, int delta);
+        void moveFast(bool sideIn, int delta);
 
         void moveT(int speedRight, int speedLeft);
 
