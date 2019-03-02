@@ -15,49 +15,28 @@ class TaMcP
 {
 private:
 
-    const int _numLog = 10;
-    String _statusStr[10];
-
-    int _spd;
-
-    int _backLeft;
+    int _downLeft;
     int _upLeft;
-    int _backRight;
+    int _downRight;
     int _upRight;
     int _speedRight;
     int _speedLeft;
-    bool _reverseMove;
-    bool _stopMoveMode;
-    int _maxSpd;
 
 public:
 
     TaMcP(int pins[6]);
 
-    void statusChange(String newStatus);
-    String getStatus();
-
-    void setReverse(bool statusMode);
-
     void moveUp();
-    void moveBack();
+    void moveDown();
     void right();
     void left();
     void moveUpRight();
     void moveUpLeft();
-    void moveBackRight();
-    void moveBackLeft();
-    void stopMove();
+    void moveDownRight();
+    void moveDownLeft();
+    void stopMove(int msec);
 
-    void moveSlow();
-    void moveFast();
-    void setSpd(int speedIn);
-
-    void setStopMoveMode();
-
-
-
-
+    void setSpd(int speedInLeft, int speedInRight, int maxSpd);
 
 };
 

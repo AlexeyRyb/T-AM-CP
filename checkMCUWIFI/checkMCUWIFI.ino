@@ -1,11 +1,10 @@
-#include <defines.h>
-
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <time.h>
-#include <TaMcP.h>
+
+#include <controlTaMcP.h>
 
 bool reverseMode = false;
 
@@ -14,9 +13,14 @@ const char* password = "NubasIvan";
 
 String IP = "";
 int pins[6] = {D5, D6, D7, D8, D1, D2};
+
 WiFiServer server(80);
 
-TaMcP tank = TaMcP(pins);
+controlTaMcP tankAM = controlTaMcP(pins);
+
+int spdLeft = 255;
+int spdRight = 255;
+int per = 10;
 
 void setup() 
 { 
@@ -49,6 +53,7 @@ void setup()
   Serial.println("Server started");
   
   IP = WiFi.localIP().toString();
+  tankAM.moveT(0, 0);
 } 
 
 void loop() 
@@ -75,61 +80,60 @@ void loop()
   if (req.indexOf("/gpio/up") != -1)
   {
   
-    tank.moveUp();
+    tankAM.moveT(spdLeft, spdRight);
     
   }
   else if (req.indexOf("/gpio/down") != -1)
   {
     
-    tank.moveBack();
+    tankAM.moveT(-spdLeft, -spdRight);
     
   }
   else if (req.indexOf("/gpio/left") != -1)
   {
     
-    tank.left();
+    tankAM.moveT(-spdLeft, spdRight);
     
   } 
   else if (req.indexOf("/gpio/right") != -1)
   {
     
-    tank.right();
+    tankAM.moveT(spdLeft, spdRight);
     
   } 
   else if (req.indexOf("/gpio/stop") != -1)
   {
     
-    tank.stopMove();
+    tankAM.moveT(0, 0);
     
   }
   else if (req.indexOf("/gpio/moveUpRight") != -1)
   {
   
-    tank.moveUpRight();
+    tankAM.moveT(spdLeft, 0);
     
   }
   else if (req.indexOf("/gpio/moveUpLeft") != -1)
   {
     
-   tank.moveUpLeft();
+   tankAM.moveT(0, spdRight);
   
   }
   else if (req.indexOf("/gpio/moveBackRight") != -1)
   {
   
-    tank.moveBackRight();
+    tankAM.moveT(-spdLeft, 0);
   
   }
   else if (req.indexOf("/gpio/moveBackLeft") != -1)
   {
   
-    tank.moveBackLeft();
+    tankAM.moveT(0, -spdRight);
     
   }
   else if (req.indexOf("/gpio/reverse") != -1)
   {
   
-    Serial.println("reverse");
     if (reverseMode)
     {
       reverseMode = false;
@@ -138,19 +142,23 @@ void loop()
     {
       reverseMode = true;
     }
-    tank.setReverse(reverseMode);
+    tankAM.setReverse(reverseMode);
     
   }
   else if (req.indexOf("/gpio/moveSlow") != -1)
   {
-  
-     tank.moveSlow();
+     spdLeft *= per;
+     spdRight *=per;
+     tankAM.moveSlow(1, per);
+     tankAM.moveFast(0, per);
     
   }
   else if (req.indexOf("/gpio/moveFast") != -1)
   {
-  
-    tank.moveFast();
+    spdLeft *= per;
+    spdRight *=per;
+    tankAM.moveFast(1, per);
+    tankAM.moveFast(0, per);
     
   }
   else
@@ -169,7 +177,7 @@ void loop()
   s += "<br><a href='http://"+IP+"/gpio/moveBackLeft'>DOWN AND LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/down'>DOWN</a> &emsp;&emsp;<a href='http://"+IP+"/gpio/moveBackRight'>DOWN AND RIGHT</a><br>";
   s += "<br><a href='http://"+IP+"/gpio/moveSlow'>SLOW MOVE</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/reverse'>REVERSE</a> &emsp;&emsp; <a href='http:/"+IP+"/gpio/moveFast'>FAST</a> <br>";
   s += "<br>STATUS: <br><br>";
-  s += tank.getStatus();
+  s += tankAM.getStatus();
   s += "</center><br></html>\n";
   
   client.print(s);
