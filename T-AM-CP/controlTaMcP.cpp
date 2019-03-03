@@ -167,7 +167,13 @@ void controlTaMcP::setSpdT(int speedInLeft, int speedInRight)
 
 void controlTaMcP::moveSlow(bool sideIn, int delta)
 {
-
+    Serial.print(_spdLeft);
+    Serial.print("    ");
+    Serial.print(_spdRight);
+    Serial.print("    ");
+    Serial.print(sideIn);
+    Serial.print("    ");
+    Serial.println(delta);
     if ( (delta < 100) && (delta > 0) )
     {
 
@@ -201,6 +207,10 @@ void controlTaMcP::moveSlow(bool sideIn, int delta)
 
         }
 
+        Serial.print(_spdLeft);
+        Serial.print("    ");
+        Serial.println(_spdRight);
+
         #ifdef controlTaMcP_debug
             Serial.print(timePrint() + " move speed slow right = ");
             Serial.print(_spdRight);
@@ -208,7 +218,7 @@ void controlTaMcP::moveSlow(bool sideIn, int delta)
             Serial.println(_spdLeft);
         #endif
 
-        _tank.setSpd(_spdLeft, _spdRight, _maxSpd);
+        setSpdT(_spdLeft, _spdRight);
 
     }
 

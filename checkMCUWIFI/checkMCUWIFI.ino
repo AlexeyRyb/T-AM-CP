@@ -18,14 +18,11 @@ WiFiServer server(80);
 
 controlTaMcP tankAM = controlTaMcP(pins);
 
-int spdLeft = 255;
-int spdRight = 255;
-int per = 10;
 int timeMove = millis();
 int timing = 1;
 bool moving = false;
 
-String valuePost(String reqIn, String valIn)
+String parseMethod(String reqIn, String valIn)
 {
   int beginStrIn = reqIn.indexOf(valIn);
   if (beginStrIn == -1)
@@ -34,7 +31,7 @@ String valuePost(String reqIn, String valIn)
   }
   else
   {
-    int questionNext = reqIn.indexOf("?", beginStrIn);
+    int questionNext = reqIn.indexOf("&", beginStrIn);
     int spaceNext = reqIn.indexOf(" ", beginStrIn);
     if (questionNext == -1)
     {
@@ -52,7 +49,7 @@ void setup()
 { 
   
   Serial.begin(115200); 
-  Serial.setTimeout(100); 
+  Serial.setTimeout(0); 
   
   
   Serial.println("Ready!"); 
@@ -86,8 +83,12 @@ void loop()
 { 
   if ( ( (millis() - timeMove) / 1000.0 > timing) && moving )
   {
+    
     tankAM.moveT(0, 0);
+    moving = false;
+  
   }
+  
   WiFiClient client = server.available();
   
   if (!client) 
@@ -113,18 +114,99 @@ void loop()
 
     String reqGet = req.substring(beginStr, endStr);
 
-    if (reqGet.indexOf("move") != -1)
+    if ( (reqGet.indexOf("move") != -1) && (reqGet.indexOf("left") != -1) && (reqGet.indexOf("right") != -1) && (reqGet.indexOf("time") != -1) ) 
     {
-      int spdLeft = valuePost(reqGet, "left").toInt();
-      int spdRight = valuePost(reqGet, "right").toInt();
-      int timing = valuePost(reqGet, "time").toInt();
-      int timeMove = millis();
-      moving = true;
       
+        int spdLeft = parseMethod(reqGet, "left").toInt();
+        int spdRight = parseMethod(reqGet, "right").toInt();
+        timing = parseMethod(reqGet, "time").toInt();
+        timeMove = millis();
+     
+        moving = true;
       
-      tankAM.moveT(spdLeft, spdRight);
-      
+        tankAM.moveT(spdLeft, spdRight);
+           
     }
+
+    if (reqGet.indexOf("setSetting") != -1)
+    {
+      
+      if (reqGet.indexOf("reverseMode") != -1)
+      {
+        bool reverseMode = parseMethod(reqGet, "reverseMode").toInt();
+        tankAM.setReverse(reverseMode);
+      }
+      
+      if (reqGet.indexOf("stopMoveMode") != -1)
+      {
+        bool stopMoveMode = parseMethod(reqGet, "stopMoveMode").toInt();
+        tankAM.setStopMoveMode(stopMoveMode);
+      }
+
+      if (reqGet.indexOf("msecStop") != -1)
+      {
+        int msecStop = parseMethod(reqGet, "msecStop").toInt();
+        tankAM.setMsecStop(msecStop);
+      }
+
+      if ( (reqGet.indexOf("SpdLeft") != -1) && (reqGet.indexOf("SpdRight") != -1) )
+      {
+        int spdLeft = parseMethod(reqGet, "spdLeft").toInt();
+        int spdRight = parseMethod(reqGet, "spdRight").toInt();
+        tankAM.setSpdT(spdLeft, spdRight);
+      }
+       
+    }
+
+    if (reqGet.indexOf("setSpdPer") != -1)
+    {
+
+      int rightPer = parseMethod(reqGet, "right").toInt();
+      int leftPer = parseMethod(reqGet, "left").toInt();
+
+      if (rightPer)
+      {
+        
+        if (rightPer > 0)
+        {
+          tankAM.moveFast(0, rightPer);
+        }
+        else
+        {
+          tankAM.moveSlow(0, -rightPer);
+        }
+      
+      }
+
+      if (leftPer)
+      {
+
+        if (leftPer > 0)
+        {
+          tankAM.moveFast(1, leftPer);
+        }
+        else
+        {
+          tankAM.moveSlow(1, -leftPer);
+        }
+      
+      }
+    
+    }
+
+    String s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\n ";
+      
+    s += "<center><a href='http://"+IP+"/move?left=0&right="+1000 +"&time=1'>UP AND LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/move?left=1000&right=1000&time=1'>UP</a> &emsp;&emsp; <a href='http://"+IP+"/move?left=1000&right=0&time=1'>UP AND RIGHT</a><br>";
+    s += "<br><a href='http:/"+IP+"/move?left=-1000&right=1000&time=1'>LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/move?left=0&right=0&time=1'>STOP</a> &emsp;&emsp; <a href='http://"+IP+"/move?left=1000&right=-1000&time=1'>RIGHT</a><br>";
+    s += "<br><a href='http://"+IP+"/move?left=0&right=-1000&time=1'>DOWN AND LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/move?left=-1000&right=-1000&time=1'>DOWN</a> &emsp;&emsp;<a href='http://"+IP+"/move?left=-1000&right=0&time=1'>DOWN AND RIGHT</a><br>";
+    s += "<br><a href='http://"+IP+"/setSpdPer?left=1&right=1&rightPer=-20&leftPer=-20'>SLOW MOVE</a> &emsp;&emsp; <a href='http://"+IP+"/setSetting?reverseMode=1'>REVERSE ON</a> &emsp;&emsp; <a href='http:/"+IP+"/setSpdPer?right=1&left=1&rightPer=20&leftPer=20'>FAST</a> <br>";
+    s += " <br> <a href='http://"+IP+"/setSetting?reverseMode=0'>REVERSE OFF</a> <br>";
+    s += "<br>STATUS: <br><br>";
+    s += tankAM.getStatus();
+    s += "</center><br></html>\n";
+      
+      client.print(s);
+    
 
   }
   if (req.indexOf("POST") != -1)
@@ -133,58 +215,89 @@ void loop()
     int endStr = req.lastIndexOf("HTTP") - 1;
 
     String reqPost = req.substring(beginStr, endStr);
-  }
- 
-  else if (req.indexOf("/gpio/reverse") != -1)
-  {
-  
-    if (reverseMode)
+
+    if ( (reqPost.indexOf("move") != -1) && (reqPost.indexOf("left") != -1) && (reqPost.indexOf("right") != -1) && (reqPost.indexOf("time") != -1) ) 
     {
-      reverseMode = false;
+      
+        int spdLeft = parseMethod(reqPost, "left").toInt();
+        int spdRight = parseMethod(reqPost, "right").toInt();
+        timing = parseMethod(reqPost, "time").toInt();
+        timeMove = millis();
+     
+        moving = true;
+      
+        tankAM.moveT(spdLeft, spdRight);
+           
     }
-    else
+
+    if (reqPost.indexOf("setSetting") != -1)
     {
-      reverseMode = true;
+      
+      if (reqPost.indexOf("reverseMode") != -1)
+      {
+        bool reverseMode = parseMethod(reqPost, "reverseMode").toInt();
+        tankAM.setReverse(reverseMode);
+      }
+      
+      if (reqPost.indexOf("stopMoveMode") != -1)
+      {
+        bool stopMoveMode = parseMethod(reqPost, "stopMoveMode").toInt();
+        tankAM.setStopMoveMode(stopMoveMode);
+      }
+
+      if (reqPost.indexOf("msecStop") != -1)
+      {
+        int msecStop = parseMethod(reqPost, "msecStop").toInt();
+        tankAM.setMsecStop(msecStop);
+      }
+
+      if ( (reqPost.indexOf("SpdLeft") != -1) && (reqPost.indexOf("SpdRight") != -1) )
+      {
+        int spdLeft = parseMethod(reqPost, "spdLeft").toInt();
+        int spdRight = parseMethod(reqPost, "spdRight").toInt();
+        tankAM.setSpdT(spdLeft, spdRight);
+      }
+       
     }
-    tankAM.setReverse(reverseMode);
+
+    if (reqPost.indexOf("setSpdPer") != -1)
+    {
+
+      int rightPer = parseMethod(reqPost, "right").toInt();
+      int leftPer = parseMethod(reqPost, "left").toInt();
+
+      if (rightPer)
+      {
+        
+        if (rightPer > 0)
+        {
+          tankAM.moveFast(0, rightPer);
+        }
+        else
+        {
+          tankAM.moveSlow(0, -rightPer);
+        }
+      
+      }
+
+      if (leftPer)
+      {
+
+        if (leftPer > 0)
+        {
+          tankAM.moveFast(1, leftPer);
+        }
+        else
+        {
+          tankAM.moveSlow(1, -leftPer);
+        }
+      
+      }
     
-  }
-  else if (req.indexOf("/gpio/moveSlow") != -1)
-  {
-     spdLeft *= per;
-     spdRight *=per;
-     tankAM.moveSlow(1, per);
-     tankAM.moveFast(0, per);
-    
-  }
-  else if (req.indexOf("/gpio/moveFast") != -1)
-  {
-    spdLeft *= per;
-    spdRight *=per;
-    tankAM.moveFast(1, per);
-    tankAM.moveFast(0, per);
-    
-  }
-  else
-  {
-  
-   Serial.println("invalid");
-  
+    }
   }
   
-  client.flush();
   
-  String s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\n ";
-  
-  s += "<center><a href='http://"+IP+"/move?left=0&right=1000&time=5'>UP AND LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/move?left=200&right=1000&time=5'>UP</a> &emsp;&emsp; <a href='http://"+IP+"/move?left=1000&right=0&time=5'>UP AND RIGHT</a><br>";
-  s += "<br><a href='http:/"+IP+"/move?left=-1000&right=1000&time=5'>LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/move?left=0&right=0&time=5'>STOP</a> &emsp;&emsp; <a href='http://"+IP+"/move?left=1000&right=-1000&time=5'>RIGHT</a><br>";
-  s += "<br><a href='http://"+IP+"/gpio/move?left=0&right=-1000&time=5'>DOWN AND LEFT</a> &emsp;&emsp; <a href='http://"+IP+"/move?left=-1000&right=1000&time=5'>DOWN</a> &emsp;&emsp;<a href='http://"+IP+"/gpio/move?left=-1000&right=0&time=5'>DOWN AND RIGHT</a><br>";
-  s += "<br><a href='http://"+IP+"/gpio/moveSlow'>SLOW MOVE</a> &emsp;&emsp; <a href='http://"+IP+"/gpio/reverse'>REVERSE</a> &emsp;&emsp; <a href='http:/"+IP+"/gpio/moveFast'>FAST</a> <br>";
-  s += "<br>STATUS: <br><br>";
-  s += tankAM.getStatus();
-  s += "</center><br></html>\n";
-  
-  client.print(s);
   delay(1);
   Serial.println("Client disonnected");
   
