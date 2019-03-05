@@ -10,6 +10,7 @@
 #include "defines.h"
 #include "TaMcP.h"
 
+
 String timePrint();
 
 class controlTaMcP
@@ -31,8 +32,7 @@ class controlTaMcP
 
         TaMcP _tank;
 
-        void moveT();
-
+        void moveT();\
 
   	public:
 
@@ -60,6 +60,12 @@ class controlTaMcP
 
 		void setMsecStop(int msecIn);
 		int getMsecStop();
+
+		void restRun();
+
+		void restStart();
+
+
 
 
 
