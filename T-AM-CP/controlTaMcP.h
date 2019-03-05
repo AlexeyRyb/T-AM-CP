@@ -32,7 +32,7 @@ class controlTaMcP
 
         TaMcP _tank;
 
-        void moveT();\
+        void moveT();
 
   	public:
 
@@ -64,10 +64,7 @@ class controlTaMcP
 		void restRun();
 
 		void restStart();
-
-
-
-
+		void checkSerial();
 
 };
 

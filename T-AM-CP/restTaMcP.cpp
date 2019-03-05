@@ -58,6 +58,7 @@ void restTaMcP::startWiFiMode(char* ssidIn, char* passwordIn)
     _server.begin();
 
     _IP = WiFi.localIP().toString();
+    delay(1000);
     Serial.println(_IP);
 
 }
@@ -241,7 +242,7 @@ void restTaMcP::checkRest()
         delay(1);
     }
 
-    String _lastRequest = _client.readStringUntil('\r');
+    _lastRequest = _client.readStringUntil('\r');
     _client.flush();
 
 
@@ -249,7 +250,6 @@ void restTaMcP::checkRest()
     {
         requestProcessingGET( parseGET(_lastRequest) );
         _client.print(_htmlReq);
-        Serial.println(_htmlReq);
         _htmlReq = "";
         _client.flush();
 
@@ -261,6 +261,93 @@ void restTaMcP::checkRest()
     }
 
     delay(1);
+
+}
+
+void restTaMcP::checkSerial()
+{
+
+    if (Serial.available() > 0)
+    {
+
+        int ctrl = Serial.parseInt();
+
+        if (ctrl == 1)
+        {
+            int leftSpd = Serial.parseInt();
+            int rightSpd = Serial.parseInt();
+
+            _tankRest.moveT(leftSpd, rightSpd);
+        }
+
+        if (ctrl == 2)
+        {
+            int leftSpd = Serial.parseInt();
+            int rightSpd = Serial.parseInt();
+
+            _tankRest.setSpdT(leftSpd, rightSpd);
+        }
+
+        if (ctrl == 3)
+        {
+
+            bool sideMove = Serial.parseInt();
+            int delt = Serial.parseInt();
+
+            if (delt > 0)
+            {
+                _tankRest.moveFast(sideMove, delt);
+            }
+            else
+            {
+                _tankRest.moveSlow(sideMove, -delt);
+            }
+
+        }
+
+        if (ctrl == 4)
+        {
+            bool stopMode = Serial.parseInt();
+
+            _tankRest.setStopMoveMode(stopMode);
+
+        }
+
+        if (ctrl == 5)
+        {
+            bool reverseMode = Serial.parseInt();
+
+            _tankRest.setReverse(reverseMode);
+        }
+
+        if (ctrl == 6)
+        {
+            int msec = Serial.parseInt();
+
+            _tankRest.setMsecStop(msec);
+        }
+
+        if (ctrl == 7)
+        {
+            Serial.println(_IP);
+        }
+
+        if (ctrl == 8)
+        {
+            Serial.println(_ssid);
+            Serial.println(_password);
+        }
+
+        if (ctrl == 9)
+        {
+            Serial.println(_lastRequest);
+        }
+
+        if (ctrl == 10)
+        {
+            Serial.println(_moving);
+        }
+    }
 
 }
 

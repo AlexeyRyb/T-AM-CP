@@ -26,5 +26,7 @@ void loop()
 { 
   
   tankAM.checkRest();
+
+  tankAM.checkSerial(); 
   
 }

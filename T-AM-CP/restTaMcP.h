@@ -69,6 +69,7 @@ class restTaMcP
         String parsePOST(String reqIn);
 
         void checkRest();
+        void checkSerial();
 
 };
 

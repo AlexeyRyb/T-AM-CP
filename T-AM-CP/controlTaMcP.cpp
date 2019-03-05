@@ -411,4 +411,71 @@ void controlTaMcP::moveT(int speedLeft, int speedRight)
 
 }
 
+void controlTaMcP::checkSerial()
+{
+
+    if (Serial.available() > 0)
+    {
+
+        int ctrl = Serial.parseInt();
+
+        if (ctrl == 1)
+        {
+            int leftSpd = Serial.parseInt();
+            int rightSpd = Serial.parseInt();
+
+            moveT(leftSpd, rightSpd);
+        }
+
+        if (ctrl == 2)
+        {
+            int leftSpd = Serial.parseInt();
+            int rightSpd = Serial.parseInt();
+
+            setSpdT(leftSpd, rightSpd);
+        }
+
+        if (ctrl == 3)
+        {
+
+            bool sideMove = Serial.parseInt();
+            int delt = Serial.parseInt();
+
+            if (delt > 0)
+            {
+                moveFast(sideMove, delt);
+            }
+            else
+            {
+                moveSlow(sideMove, -delt);
+            }
+
+        }
+
+        if (ctrl == 4)
+        {
+            bool stopMode = Serial.parseInt();
+
+            setStopMoveMode(stopMode);
+
+        }
+
+        if (ctrl == 5)
+        {
+            bool reverseMode = Serial.parseInt();
+
+            setReverse(reverseMode);
+        }
+
+        if (ctrl == 6)
+        {
+            int msec = Serial.parseInt();
+
+            setMsecStop(msec);
+        }
+
+    }
+
+}
+
 
