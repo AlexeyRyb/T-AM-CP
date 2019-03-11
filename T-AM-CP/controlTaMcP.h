@@ -18,7 +18,7 @@ class controlTaMcP
 	private:
 	
 		const int _numLog = 10;
-		const int _spdMotor = 1023; 
+		const int _spdMotor = 255;
         String _statusStr[10];
 
         int _spdRight;

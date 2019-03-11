@@ -1,32 +1,74 @@
+
 #include <time.h>
 
-#include <restTaMcP.h>
 
-bool reverseMode = false;
+#include "caterpillarTaMcP.h"
 
-char* ssid = "MiInet";
-char* password = "NubasIvan";
+const int downLeft = 22;
+const int upLeft = 23;
+const int downRight = 24;
+const int upRight = 25;
+const int spdLeft = 7;
+const int spdRight = 6;
 
-int pins[6] = {D5, D6, D7, D8, D1, D2};
+const int encoderRight1 = 18;
+const int encoderRight2 = 19;
+const int encoderLeft1 = 20;
+const int encoderLeft2 = 21;
 
+int pinsLeft[5] = {downLeft, upLeft, spdLeft, encoderLeft1, encoderLeft2};
+int pinsRight[5] = {downRight, upRight, spdRight, encoderRight1, encoderRight2};
 
-restTaMcP tankAM = restTaMcP(pins);
+Array <double, 2> curPos;
+
+double coefLeftDown = 1.08168;
+double coefLeftUp = 0.545555;
+double coefRightDown = 0.6475;
+double coefRightUp = 0.736462;
+caterpillarTaMcP caterpillarLeft(pinsLeft);
+caterpillarTaMcP caterpillarRight(pinsRight);
 
 void setup() 
 { 
   
   Serial.begin(115200); 
   Serial.setTimeout(10); 
-
-  tankAM.startWiFiMode(ssid, password);
+  caterpillarRight.setCoef(coefRightDown, coefRightUp);
+  caterpillarLeft.setCoef(coefLeftDown, coefLeftUp);
   
 } 
 
 void loop() 
 { 
-  
-  tankAM.checkRest();
 
-  tankAM.checkSerial(); 
+  if (Serial.available() > 0)
+  {
+    int ctrl = Serial.parseInt();
+
+    if (ctrl == 1)
+    {
+        double spd = Serial.parseFloat();
+        caterpillarLeft.setSpd(spd);
+        caterpillarRight.setSpd(spd);
+    }
+
+    if (ctrl == 2)
+    {
+      double spd = Serial.parseFloat();
+      double dist = Serial.parseFloat();
+      caterpillarLeft.setSpdAndDist(spd, dist);
+      caterpillarRight.setSpdAndDist(spd, dist);
+    }
+  }
+  Serial.print("Left: ");
+  caterpillarLeft.checkMove();
+ Serial.print("Right: ");
+ caterpillarRight.checkMove();
+  Serial.println();
+  /*curPos = caterpillarLeft.currentPosition();
+  Serial.print(curPos[0]);
+  Serial.print("  ");
+  Serial.println(curPos[1]);*/
+  
   
 }

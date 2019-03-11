@@ -414,11 +414,14 @@ void controlTaMcP::moveT(int speedLeft, int speedRight)
 void controlTaMcP::checkSerial()
 {
 
-    if (Serial.available() > 0)
-    {
+    if (Serial.available() > 0) {
 
         int ctrl = Serial.parseInt();
 
+        if (ctrl == 0)
+        {
+            moveT(0, 0);
+        }
         if (ctrl == 1)
         {
             int leftSpd = Serial.parseInt();
