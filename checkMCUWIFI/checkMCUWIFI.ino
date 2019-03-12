@@ -19,12 +19,15 @@ const int encoderLeft2 = 21;
 int pinsLeft[5] = {downLeft, upLeft, spdLeft, encoderLeft1, encoderLeft2};
 int pinsRight[5] = {downRight, upRight, spdRight, encoderRight1, encoderRight2};
 
-Array <double, 2> curPos;
+Array <double, 2> curPosLeft;
+Array <double, 2> curPosRight;
+
 
 double coefLeftDown = 1.08168;
 double coefLeftUp = 0.545555;
 double coefRightDown = 0.6475;
 double coefRightUp = 0.736462;
+
 caterpillarTaMcP caterpillarLeft(pinsLeft);
 caterpillarTaMcP caterpillarRight(pinsRight);
 
@@ -32,7 +35,7 @@ void setup()
 { 
   
   Serial.begin(115200); 
-  Serial.setTimeout(10); 
+  Serial.setTimeout(10);  
   caterpillarRight.setCoef(coefRightDown, coefRightUp);
   caterpillarLeft.setCoef(coefLeftDown, coefLeftUp);
   
@@ -60,15 +63,22 @@ void loop()
       caterpillarRight.setSpdAndDist(spd, dist);
     }
   }
-  Serial.print("Left: ");
-  caterpillarLeft.checkMove();
- Serial.print("Right: ");
- caterpillarRight.checkMove();
-  Serial.println();
-  /*curPos = caterpillarLeft.currentPosition();
-  Serial.print(curPos[0]);
-  Serial.print("  ");
-  Serial.println(curPos[1]);*/
+
+  caterpillarLeft.updateInternalData();
+  caterpillarRight.updateInternalData();
   
+  curPosLeft = caterpillarLeft.getCurrentPosition();
+
+  Serial.print("Left:    ");
+  Serial.print(curPosLeft[0]);
+  Serial.print("  ");
+  Serial.print(curPosLeft[1]);
+  
+  curPosRight = caterpillarRight.getCurrentPosition();
+
+  Serial.print("    Right:    ");
+  Serial.print(curPosRight[0]);
+  Serial.print("  ");
+  Serial.println(curPosRight[1]);
   
 }

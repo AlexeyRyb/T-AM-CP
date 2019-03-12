@@ -26,22 +26,23 @@ class caterpillarTaMcP
         double _spdNow;
         double _spdNeed;
 
-        double _maxSpd;
-        double _maxSpdPin;
+        const double _minSpd;
+        const double _maxSpd;
+        const double _maxValuePin;
 
         encoderTaMcP _encoderTaMcP;
 
-        int _pinDown;
-        int _pinUp;
-        int _pinSpd;
+        const int _pinDown;
+        const int _pinUp;
+        const int _pinSpd;
 
         bool _spdMode;
 
-        double _epsDist;
-        double _spdMin;
-        double _epsSpd;
+        const double _epsDist;
+        const double _epsSpd;
+
         double _sendSpd;
-        double _numberOfStaps;
+        double _numberOfSteps;
 
         bool _moving;
 
@@ -49,10 +50,10 @@ class caterpillarTaMcP
         double _coefUp;
 
         void _moveUp();
-        void _moveBack();
+        void _moveDown();
         void _stopMove();
 
-        void _changeDistAndSpd();
+        void _updateDistAndSpdEncoder();
         void _standSpd();
 
         bool _isDistReached();
@@ -67,9 +68,9 @@ class caterpillarTaMcP
 
         void setCoef(double coefDownIn, double coefUpIn);
 
-        void checkMove();
+        void updateInternalData();
 
-        Array <double, 2> currentPosition();
+        Array <double, 2> getCurrentPosition();
 
 };
 

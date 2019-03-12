@@ -20,7 +20,7 @@ class encoderTaMcP
 
         Encoder _encoder;
         double _dist;
-        double _coefTomm;
+        double _OneStepToMm;
 
         long _oldPosition;
         long _newPosition;
@@ -37,7 +37,7 @@ class encoderTaMcP
         double getDist();
         double getSpd();
 
-        void checkDist(bool moving);
+        void updateStatusEncoder(bool moving);
         void resetDist();
 
 

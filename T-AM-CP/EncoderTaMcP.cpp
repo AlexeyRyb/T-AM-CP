@@ -10,15 +10,16 @@ encoderTaMcP::encoderTaMcP(int encoderIn1, int encoderIn2)
     _oldPosition(-999),
     _prevTime(micros()),
     _spd(0),
-    _coefTomm(0.7)
+    _OneStepToMm(0.7)
 {
 }
 
+//Need to change the coefficient on the move, as they are different for moving forward and backward
 void encoderTaMcP::setCoef(double coefIn)
 {
     if (coefIn > 0)
     {
-        _coefTomm = coefIn;
+        _OneStepToMm = coefIn;
     }
 }
 double encoderTaMcP::getDist()
@@ -35,29 +36,26 @@ void encoderTaMcP::resetDist()
     _dist = 0.0;
 }
 
-void encoderTaMcP::checkDist(bool moving)
+void encoderTaMcP::updateStatusEncoder(bool moving)
 {
 
     _newPosition = _encoder.read();
 
-   // Serial.println(_newPosition);
-
     if (_newPosition != _oldPosition)
     {
 
-        if (moving)
-        {
-            _stepTime = micros() - _prevTime;
-            _prevTime = micros();
-            _spd = _coefTomm / (_stepTime / 1e6);
-        }
-        else
-        {
-            _spd = 0.0;
-        }
+        _stepTime = micros() - _prevTime;
+        _prevTime = micros();
+        _spd = _OneStepToMm / (_stepTime / 1e6);
 
         _oldPosition = _newPosition;
-       _dist += _coefTomm;
+       _dist += _OneStepToMm;
+
+    }
+
+    if (!moving)
+    {
+        _spd = 0.0;
     }
 
 }
