@@ -20,10 +20,10 @@ const int encoderLeft2 = 21;
 int pinsLeft[5] = {downLeft, upLeft, spdLeft, encoderLeft1, encoderLeft2};
 int pinsRight[5] = {downRight, upRight, spdRight, encoderRight1, encoderRight2};
 
-double coefLeftDown = 1.08168;
-double coefLeftUp = 0.545555;
-double coefRightDown = 0.6475;
-double coefRightUp = 0.736462;
+double coefLeftDown = 1.;
+double coefLeftUp = 1.;
+double coefRightDown = 1.;
+double coefRightUp = 1.;
 
 TaMcP tank(pinsLeft, pinsRight);
 

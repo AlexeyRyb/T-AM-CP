@@ -53,8 +53,7 @@ void TaMcP::setCoefEncoder(double coefLeftDownIn, double coefLeftUpIn,
     }
 }
 
-void TaMcP::updateInternalDataT()
-{
+void TaMcP::updateInternalDataT() {
 
     _caterpillarLeft.updateInternalData();
     _caterpillarRight.updateInternalData();
@@ -91,20 +90,19 @@ void TaMcP::updateInternalDataT()
         }
 
     }
-    Array<double, 4> TaMcP::getCurrentPositionT()
-    {
+}
 
-        Array<double, 2> positionLeft = _caterpillarLeft.getCurrentPosition();
-        Array<double, 2> positionRight = _caterpillarRight.getCurrentPosition();
-        Array<double, 4> position;
+Array<double, 4> TaMcP::getCurrentPositionT()
+{
 
-        position.at(0) = positionLeft.at(0);
-        position.at(1) = positionLeft.at(1);
-        position.at(2) = positioRight.at(0);
-        position.at(3) = positionRight.at(1);
+    Array<double, 2> positionLeft = _caterpillarLeft.getCurrentPosition();
+    Array<double, 2> positionRight = _caterpillarRight.getCurrentPosition();
+    Array<double, 4> position;
 
-
-
-    }
+    position.at(0) = positionLeft.at(0);
+    position.at(1) = positionLeft.at(1);
+    position.at(2) = positionRight.at(0);
+    position.at(3) = positionRight.at(1);
+    return position;
 }
 
