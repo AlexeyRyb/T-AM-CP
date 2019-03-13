@@ -17,60 +17,58 @@
 
 class caterpillarTaMcP
 {
+private:
 
-    private:
+    double _distNow;
+    double _distNeed;
 
-        double _distNow;
-        double _distNeed;
+    double _spdNow;
+    double _spdNeed;
 
-        double _spdNow;
-        double _spdNeed;
+    const double _minSpd;
+    const double _maxSpd;
+    const double _maxValuePin;
 
-        const double _minSpd;
-        const double _maxSpd;
-        const double _maxValuePin;
+    encoderTaMcP _encoderTaMcP;
 
-        encoderTaMcP _encoderTaMcP;
+    const int _pinDown;
+    const int _pinUp;
+    const int _pinSpd;
 
-        const int _pinDown;
-        const int _pinUp;
-        const int _pinSpd;
+    bool _spdMode;
 
-        bool _spdMode;
+    const double _epsDist;
+    const double _epsSpd;
 
-        const double _epsDist;
-        const double _epsSpd;
+    double _sendSpd;
+    double _numberOfSteps;
 
-        double _sendSpd;
-        double _numberOfSteps;
+    bool _moving;
 
-        bool _moving;
+    double _coefDown;
+    double _coefUp;
 
-        double _coefDown;
-        double _coefUp;
+    void _moveUp();
+    void _moveDown();
+    void _stopMove();
 
-        void _moveUp();
-        void _moveDown();
-        void _stopMove();
+    void _updateDistAndSpdEncoder();
+    void _standSpd();
 
-        void _updateDistAndSpdEncoder();
-        void _standSpd();
+public:
 
-        bool _isDistReached();
+    caterpillarTaMcP(int pins[5]);
 
+    bool setSpdAndDist(double spdIn, double distIn);
+    bool setSpd(double spdIn);
 
-    public:
+    bool setCoef(double coefDownIn, double coefUpIn);
 
-        caterpillarTaMcP(int pins[5]);
+    bool isDistReached();
 
-        void setSpdAndDist(double spdIn, double distIn);
-        void setSpd(double spdIn);
+    void updateInternalData();
 
-        void setCoef(double coefDownIn, double coefUpIn);
-
-        void updateInternalData();
-
-        Array <double, 2> getCurrentPosition();
+    Array <double, 2> getCurrentPosition();
 
 };
 

@@ -2,12 +2,13 @@
 #include <time.h>
 
 
-#include "caterpillarTaMcP.h"
+#include "TaMcP.h"
 
-const int downLeft = 22;
-const int upLeft = 23;
-const int downRight = 24;
-const int upRight = 25;
+const int downLeft = 50;
+const int upLeft = 51;
+const int downRight = 53;
+const int upRight = 52;
+
 const int spdLeft = 7;
 const int spdRight = 6;
 
@@ -19,25 +20,20 @@ const int encoderLeft2 = 21;
 int pinsLeft[5] = {downLeft, upLeft, spdLeft, encoderLeft1, encoderLeft2};
 int pinsRight[5] = {downRight, upRight, spdRight, encoderRight1, encoderRight2};
 
-Array <double, 2> curPosLeft;
-Array <double, 2> curPosRight;
-
-
 double coefLeftDown = 1.08168;
 double coefLeftUp = 0.545555;
 double coefRightDown = 0.6475;
 double coefRightUp = 0.736462;
 
-caterpillarTaMcP caterpillarLeft(pinsLeft);
-caterpillarTaMcP caterpillarRight(pinsRight);
+TaMcP tank(pinsLeft, pinsRight);
 
 void setup() 
 { 
   
   Serial.begin(115200); 
   Serial.setTimeout(10);  
-  caterpillarRight.setCoef(coefRightDown, coefRightUp);
-  caterpillarLeft.setCoef(coefLeftDown, coefLeftUp);
+  tank.setCoefEncoder(coefLeftDown, coefLeftUp, coefRightDown, coefRightUp);
+  Serial.println("Ready");
   
 } 
 
@@ -50,35 +46,30 @@ void loop()
 
     if (ctrl == 1)
     {
-        double spd = Serial.parseFloat();
-        caterpillarLeft.setSpd(spd);
-        caterpillarRight.setSpd(spd);
+      double spd = Serial.parseFloat();
+        
+      tank.setMoveSpd(spd, spd);
     }
 
     if (ctrl == 2)
     {
       double spd = Serial.parseFloat();
       double dist = Serial.parseFloat();
-      caterpillarLeft.setSpdAndDist(spd, dist);
-      caterpillarRight.setSpdAndDist(spd, dist);
+      
+      tank.setMoveSpdAndDist(spd, dist, spd, dist, false);
     }
   }
 
-  caterpillarLeft.updateInternalData();
-  caterpillarRight.updateInternalData();
-  
-  curPosLeft = caterpillarLeft.getCurrentPosition();
+  tank.updateInternalDataT();
 
-  Serial.print("Left:    ");
-  Serial.print(curPosLeft[0]);
-  Serial.print("  ");
-  Serial.print(curPosLeft[1]);
-  
-  curPosRight = caterpillarRight.getCurrentPosition();
+  Array<double, 4> positionNow = tank.getCurrentPositionT();
 
-  Serial.print("    Right:    ");
-  Serial.print(curPosRight[0]);
+  Serial.print("Right:    ");
+  Serial.print(positionNow.at(0));
   Serial.print("  ");
-  Serial.println(curPosRight[1]);
-  
+  Serial.print(positionNow.at(1));
+  Serial.print("    Left:    ");
+  Serial.print(positionNow.at(2));
+  Serial.print("  ");
+  Serial.println(positionNow.at(3));
 }

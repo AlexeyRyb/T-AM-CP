@@ -64,40 +64,44 @@ void caterpillarTaMcP::_updateDistAndSpdEncoder()
     _spdNow = _encoderTaMcP.getSpd();
 }
 
-void caterpillarTaMcP::setSpd(double spdIn)
+bool caterpillarTaMcP::setSpd(double spdIn)
 {
-
-    _spdMode = true;
 
     if  (abs(spdIn) <= _maxSpd)
     {
+        _spdMode = true;
         _spdNeed = spdIn;
-    }
+        _encoderTaMcP.resetDist();
 
-    _encoderTaMcP.resetDist();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 
 }
 
-void caterpillarTaMcP::setSpdAndDist(double spdIn, double distIn)
+bool caterpillarTaMcP::setSpdAndDist(double spdIn, double distIn)
 {
 
-    _spdMode = false;
-
-    if  (abs(spdIn) <= _maxSpd)
+    if  ( (abs(spdIn) <= _maxSpd) && (distIn >= 0) )
     {
+        _spdMode = false;
         _spdNeed = spdIn;
-    }
-
-    if  (distIn >= 0)
-    {
         _distNeed = distIn;
-    }
+        _encoderTaMcP.resetDist();
 
-    _encoderTaMcP.resetDist();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 
 }
 
-bool caterpillarTaMcP::_isDistReached()
+bool caterpillarTaMcP::isDistReached()
 {
     return abs(_distNeed - _distNow) <= _epsDist;
 }
@@ -135,16 +139,17 @@ void caterpillarTaMcP::_standSpd()
     }
 }
 
-void caterpillarTaMcP::setCoef(double coefDownIn, double coefUpIn)
+bool caterpillarTaMcP::setCoef(double coefDownIn, double coefUpIn)
 {
-    if (coefDownIn > 0)
+    if ( (coefDownIn > 0) && (coefUpIn > 0) )
     {
         _coefDown = coefDownIn;
-    }
-
-    if (coefUpIn > 0)
-    {
         _coefUp = coefUpIn;
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 
@@ -153,7 +158,7 @@ void caterpillarTaMcP::updateInternalData()
 
     _updateDistAndSpdEncoder();
 
-    if (!_spdMode && _isDistReached())
+    if (!_spdMode && isDistReached())
     {
         _stopMove();
     }

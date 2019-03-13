@@ -7,6 +7,7 @@
 #include <WProgram.h>
 #endif
 
+#include "caterpillarTaMcP.h"
 #include "defines.h"
 
 String timePrint();
@@ -15,28 +16,30 @@ class TaMcP
 {
 private:
 
-    int _downLeft;
-    int _upLeft;
-    int _downRight;
-    int _upRight;
-    int _speedRight;
-    int _speedLeft;
+    caterpillarTaMcP _caterpillarLeft;
+    caterpillarTaMcP _caterpillarRight;
+
+    bool _spdMode;
+    bool _syncrhonizationMode;
+    bool _done;
+
+
 
 public:
 
-    TaMcP(int pins[6]);
+    TaMcP(int pinLeftIn[5], int pinRightIn[5]);
 
-    void moveUp();
-    void moveDown();
-    void right();
-    void left();
-    void moveUpRight();
-    void moveUpLeft();
-    void moveDownRight();
-    void moveDownLeft();
-    void stopMove(int msec);
+    void setMoveSpd(double spdLeftIn, double spdRightIn);
 
-    void setSpd(int speedInLeft, int speedInRight, int maxSpd);
+    void setMoveSpdAndDist(double spdLeftIn, double distLeftIn,
+                            double spdRightIn, double distRightIn, bool synchronization);
+
+    void setCoefEncoder(double coefLeftDownIn, double coefLeftUpIn,
+                        double coefRightDownIn, double coefRightUpIn);
+
+    void updateInternalDataT();
+
+    Array<double, 4> getCurrentPositionT();
 
 };
 

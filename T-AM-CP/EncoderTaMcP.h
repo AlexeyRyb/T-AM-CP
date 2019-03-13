@@ -16,30 +16,29 @@
 
 class encoderTaMcP
 {
-    private:
+private:
 
-        Encoder _encoder;
-        double _dist;
-        double _OneStepToMm;
+    Encoder _encoder;
+    double _dist;
+    double _OneStepToMm;
 
-        long _oldPosition;
-        long _newPosition;
+    long _oldPosition;
+    long _newPosition;
 
-        long _prevTime;
-        long _stepTime;
-        double _spd;
+    long _prevTime;
+    long _stepTime;
+    double _spd;
 
-    public:
+public:
 
-        encoderTaMcP(int encoderIn1, int encoderIn2);
-        void setCoef(double coefIn);
+    encoderTaMcP(int encoderIn1, int encoderIn2);
+    void setCoef(double coefIn);
 
-        double getDist();
-        double getSpd();
+    double getDist();
+    double getSpd();
 
-        void updateStatusEncoder(bool moving);
-        void resetDist();
-
+    void updateStatusEncoder(bool moving);
+    void resetDist();
 
 };
 

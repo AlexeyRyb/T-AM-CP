@@ -1,180 +1,110 @@
 #include "TaMcP.h"
 
-TaMcP::TaMcP(int pins[6])
+TaMcP::TaMcP(int pinLeftIn[5], int pinRightIn[5])
 :
-    _downLeft(pins[0]),
-    _upLeft(pins[1]),
-    _downRight(pins[2]),
-    _upRight(pins[3]),
-    _speedLeft(pins[4]),
-    _speedRight(pins[5])
+    _caterpillarLeft(pinLeftIn),
+    _caterpillarRight(pinRightIn),
+    _spdMode(false),
+    _done(false),
+    _syncrhonizationMode(true)
 
 {
 
-    #ifdef TaMcP_debug
-        Serial.println(timePrint()+" TaMcP init");
-        Serial.print("Pins: ");
-        for (int i = 0; i < 6; i++)
+}
+
+void TaMcP::setMoveSpd(double spdLeftIn, double spdRightIn)
+{
+
+    if ( _caterpillarLeft.setSpd(spdLeftIn) && _caterpillarRight.setSpd(spdRightIn) )
+    {
+        _spdMode = true;
+    }
+    else
+    {
+        Serial.println("Error: input data not correct(speed mode)");
+    }
+}
+
+void TaMcP::setMoveSpdAndDist(double spdLeftIn, double distLeftIn,
+                                double spdRightIn, double distRightIn, bool synchronization)
+{
+
+    if ( _caterpillarLeft.setSpdAndDist(spdLeftIn, distLeftIn) &&
+         _caterpillarRight.setSpdAndDist(spdRightIn, distRightIn) )
+    {
+        _spdMode = false;
+        _done = true;
+        _syncrhonizationMode = synchronization;
+    }
+    else
+    {
+        Serial.println("Error: input data not correct(speed and distance mode)");
+    }
+}
+
+void TaMcP::setCoefEncoder(double coefLeftDownIn, double coefLeftUpIn,
+                            double coefRightDownIn, double coefRightUpIn)
+{
+
+    if ( !_caterpillarLeft.setCoef(coefLeftDownIn, coefLeftUpIn) ||
+         !_caterpillarRight.setCoef(coefRightDownIn, coefRightUpIn) )
+    {
+        Serial.println("Error: coef encoder not correct");
+    }
+}
+
+void TaMcP::updateInternalDataT()
+{
+
+    _caterpillarLeft.updateInternalData();
+    _caterpillarRight.updateInternalData();
+
+    if (_done)
+    {
+
+        if (_syncrhonizationMode)
         {
-            Serial.print(pins[i]);
-            Serial.print(" ");
+
+            if (_caterpillarRight.isDistReached())
+            {
+                _caterpillarLeft.setSpd(0);
+                _done = false;
+                Serial.println("done");
+            }
+
+            if (_caterpillarLeft.isDistReached() && _done)
+            {
+                _caterpillarRight.setSpd(0);
+                _done = false;
+                Serial.println("done");
+            }
+
         }
-        Serial.println();
-        Serial.print("Speed: ");
-        Serial.println(_spd);
+        else
+        {
 
-    #endif
-    pinMode(_upRight, OUTPUT);
-    pinMode(_upLeft, OUTPUT);
-    pinMode(_downLeft, OUTPUT);
-    pinMode(_downRight, OUTPUT);
-    pinMode(_speedRight, OUTPUT);
-    pinMode(_speedLeft, OUTPUT);
-
-}
-
-void TaMcP::setSpd(int speedInLeft, int speedInRight, int maxSpd)
-{
-    if ((speedInRight > 0) && (speedInRight <= maxSpd))
-    {
-        analogWrite(_speedRight, speedInRight);
+            if (_caterpillarRight.isDistReached() && _caterpillarLeft.isDistReached())
+            {
+                _done = false;
+                Serial.println("done");
+            }
+        }
 
     }
-
-    if ((speedInLeft > 0) && (speedInLeft <= maxSpd))
+    Array<double, 4> TaMcP::getCurrentPositionT()
     {
-        analogWrite(_speedLeft, speedInLeft);
+
+        Array<double, 2> positionLeft = _caterpillarLeft.getCurrentPosition();
+        Array<double, 2> positionRight = _caterpillarRight.getCurrentPosition();
+        Array<double, 4> position;
+
+        position.at(0) = positionLeft.at(0);
+        position.at(1) = positionLeft.at(1);
+        position.at(2) = positioRight.at(0);
+        position.at(3) = positionRight.at(1);
+
+
 
     }
-
 }
 
-void TaMcP::stopMove(int msec)
-{
-
-    #ifdef TaMcP_debug
-        Serial.println(timePrint() + " stopMove");
-    #endif
-
-    digitalWrite(_upRight, false);
-    digitalWrite(_upLeft, false);
-    digitalWrite(_downLeft, false);
-    digitalWrite(_downRight, false);
-
-    delay(msec);
-
-}
-
-void TaMcP::moveUp()
-{
-
-    #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move up");
-    #endif
-
-     digitalWrite(_upLeft, true);
-     digitalWrite(_downLeft, false);
-     digitalWrite(_upRight, true);
-     digitalWrite(_downRight, false);
-
-}
-
-void TaMcP::moveDown()
-{
-
-    #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move back");
-    #endif
-
-     digitalWrite(_upLeft, false);
-     digitalWrite(_downRight, true);
-     digitalWrite(_upRight, false);
-     digitalWrite(_downLeft, true);
-
-}
-
-void TaMcP::right()
-{
-
-    #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move right");
-    #endif
-
-    digitalWrite(_upLeft, true);
-    digitalWrite(_downLeft, false);
-    digitalWrite(_upRight, false);
-    digitalWrite(_downRight, true);
-
-}
-
-void TaMcP::left()
-{
-
-    #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move left");
-    #endif
-
-    digitalWrite(_upLeft, false);
-    digitalWrite(_downLeft, true);
-    digitalWrite(_upRight, true);
-    digitalWrite(_downRight,false);
-
-}
-
-
-void TaMcP::moveUpRight()
-{
-
-    #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move up and right");
-    #endif
-
-    digitalWrite(_upLeft, true);
-    digitalWrite(_downLeft, false);
-    digitalWrite(_upRight, false);
-    digitalWrite(_downRight, false);
-
-}
-
-void TaMcP::moveUpLeft()
-{
-
-
-    #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move up and left");
-    #endif
-
-    digitalWrite(_upLeft, false);
-    digitalWrite(_downLeft, false);
-    digitalWrite(_upRight, true);
-    digitalWrite(_downRight, false);
-
-}
-
-void TaMcP::moveDownRight()
-{
-
-    #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move back and right");
-    #endif
-
-    digitalWrite(_upLeft, false);
-    digitalWrite(_downLeft, true);
-    digitalWrite(_upRight, false);
-    digitalWrite(_downRight, false);
-
-}
-
-void TaMcP::moveDownLeft()
-{
-
-    #ifdef TaMcP_debug
-        Serial.println(timePrint() + " move back and left");
-    #endif
-
-    digitalWrite(_upLeft, false);
-    digitalWrite(_downLeft, false);
-    digitalWrite(_upRight, false);
-    digitalWrite(_downRight, true);
-
-}
